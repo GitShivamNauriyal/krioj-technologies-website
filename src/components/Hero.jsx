@@ -107,23 +107,23 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center relative"
+            className="flex justify-center relative w-full max-w-md mx-auto"
           >
             {/* Top-Right Subtle Ambient Blue Glow */}
             <motion.div
               animate={{ y: [-8, 8, -8], scale: [0.95, 1.05, 0.95] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-8 -right-8 w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-brand-300/35 blur-2xl z-0 pointer-events-none"
+              className="absolute top-0 right-0 w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-brand-300/35 blur-2xl z-0 pointer-events-none"
             />
 
             {/* Bottom-Left Subtle Ambient Blue Glow */}
             <motion.div
               animate={{ y: [8, -8, 8], scale: [1.05, 0.95, 1.05] }}
               transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -bottom-8 -left-8 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-brand-400/30 blur-2xl z-0 pointer-events-none"
+              className="absolute bottom-0 left-0 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-brand-400/30 blur-2xl z-0 pointer-events-none"
             />
 
-            <div className="relative glass-card rounded-3xl p-4 max-w-md shadow-2xl z-10">
+            <div className="relative glass-card rounded-3xl p-4 w-full shadow-2xl z-10">
               <img
                 src="/images/hero-product.png"
                 alt="TARANG RF Tag Set"

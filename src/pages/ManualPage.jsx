@@ -306,7 +306,7 @@ export default function ManualPage() {
 
   return (
     <div
-      className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto relative pb-12"
+      className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto overflow-x-hidden w-full max-w-full box-border relative pb-12"
       onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}
       onTouchStart={handleTouchStart}

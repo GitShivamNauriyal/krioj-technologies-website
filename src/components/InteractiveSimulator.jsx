@@ -8,14 +8,14 @@ export default function InteractiveSimulator() {
   const handleRelease = () => setActiveTag(null)
 
   return (
-    <section id="simulator" className="py-20 bg-slate-50">
+    <section id="simulator" className="py-20 bg-slate-50 select-none">
       <div className="section-container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="text-center mb-12 select-none"
         >
           <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-brand-50 text-brand-600 border border-brand-100 mb-4">
             Interactive Demo
@@ -33,11 +33,11 @@ export default function InteractiveSimulator() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto select-none"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             {/* Tag 1 */}
-            <div className="flex flex-col items-center order-2 md:order-1">
+            <div className="flex flex-col items-center order-2 md:order-1 select-none">
               <div className="relative">
                 <motion.div
                   animate={activeTag === 1 ? {
@@ -49,7 +49,7 @@ export default function InteractiveSimulator() {
                   transition={activeTag === 1 ? { duration: 0.8, repeat: Infinity } : {}}
                   className="w-36 h-36 rounded-3xl glass-card p-2 flex flex-col items-center justify-center relative overflow-hidden"
                 >
-                  <img src="/images/receiver-tag.png" alt="Receiver Tag 1" className="w-20 h-20 object-contain mb-1" />
+                  <img src="/images/receiver-tag.png" alt="Receiver Tag 1" className="w-20 h-20 object-contain mb-1 pointer-events-none select-none" />
 
                   {/* LED overlay */}
                   <motion.div
@@ -60,7 +60,7 @@ export default function InteractiveSimulator() {
                     transition={activeTag === 1 ? { duration: 0.4, repeat: Infinity } : {}}
                     className="w-3.5 h-3.5 rounded-full absolute top-3 right-3"
                   />
-                  <span className="text-xs font-bold text-text-primary">TAG 1 (Keys)</span>
+                  <span className="text-xs font-bold text-text-primary select-none">TAG 1 (Keys)</span>
                 </motion.div>
 
                 {activeTag === 1 && (
@@ -81,17 +81,17 @@ export default function InteractiveSimulator() {
               <motion.div
                 animate={activeTag === 1 ? { opacity: [1, 0.5, 1], scale: [1, 1.05, 1] } : { opacity: 0.4 }}
                 transition={activeTag === 1 ? { duration: 0.3, repeat: Infinity } : {}}
-                className="mt-4 text-sm font-bold text-brand-600 bg-brand-50 px-4 py-1 rounded-full border border-brand-200"
+                className="mt-4 text-sm font-bold text-brand-600 bg-brand-50 px-4 py-1 rounded-full border border-brand-200 select-none"
               >
                 {activeTag === 1 ? '🔊 BEEPING & FLASHING' : 'Idle'}
               </motion.div>
             </div>
 
             {/* Transmitter Controls */}
-            <div className="flex flex-col items-center order-1 md:order-2">
-              <div className="glass-card rounded-3xl p-6 w-52 text-center shadow-xl">
-                <img src="/images/transmitter.png" alt="RF Transmitter Remote" className="w-24 h-24 object-contain mx-auto mb-3" />
-                <span className="text-xs font-bold text-text-muted tracking-wider uppercase block mb-4">
+            <div className="flex flex-col items-center order-1 md:order-2 select-none">
+              <div className="glass-card rounded-3xl p-6 w-52 text-center shadow-xl select-none">
+                <img src="/images/transmitter.png" alt="RF Transmitter Remote" className="w-24 h-24 object-contain mx-auto mb-3 pointer-events-none select-none" />
+                <span className="text-xs font-bold text-text-muted tracking-wider uppercase block mb-4 select-none">
                   RF Remote
                 </span>
 
@@ -100,8 +100,9 @@ export default function InteractiveSimulator() {
                     onPointerDown={() => handlePress(1)}
                     onPointerUp={handleRelease}
                     onPointerLeave={handleRelease}
+                    onContextMenu={(e) => e.preventDefault()}
                     whileTap={{ scale: 0.94 }}
-                    className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition-all cursor-pointer ${
+                    className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition-all cursor-pointer select-none ${
                       activeTag === 1
                         ? 'bg-brand-500 text-white shadow-elevated scale-102'
                         : 'bg-brand-100 text-brand-700 hover:bg-brand-200'
@@ -114,8 +115,9 @@ export default function InteractiveSimulator() {
                     onPointerDown={() => handlePress(2)}
                     onPointerUp={handleRelease}
                     onPointerLeave={handleRelease}
+                    onContextMenu={(e) => e.preventDefault()}
                     whileTap={{ scale: 0.94 }}
-                    className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition-all cursor-pointer ${
+                    className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition-all cursor-pointer select-none ${
                       activeTag === 2
                         ? 'bg-brand-500 text-white shadow-elevated scale-102'
                         : 'bg-brand-100 text-brand-700 hover:bg-brand-200'
@@ -126,7 +128,7 @@ export default function InteractiveSimulator() {
                 </div>
 
                 <div className="text-center mt-3">
-                  <span className="text-[10px] text-text-muted">Press &amp; Hold to locate</span>
+                  <span className="text-[10px] text-text-muted select-none">Press &amp; Hold to locate</span>
                 </div>
               </div>
             </div>
