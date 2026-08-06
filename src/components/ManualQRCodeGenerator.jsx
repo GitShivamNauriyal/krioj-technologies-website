@@ -90,23 +90,26 @@ export default function ManualQRCodeGenerator() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-xl mx-auto glass-card rounded-3xl p-6 sm:p-10 text-center shadow-xl border border-slate-200"
+          className="max-w-xl mx-auto glass-card rounded-3xl p-5 sm:p-10 text-center shadow-xl border border-slate-200 flex flex-col items-center justify-center"
         >
           {/* Print Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-bold mb-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-100 text-brand-700 text-xs font-bold mb-6">
             <span>🏷️</span>
             <span>Formatted for 30×30 mm Physical Stickers</span>
           </div>
 
-          {/* QR Container */}
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-white rounded-2xl shadow-inner border border-slate-200 inline-block">
-              <div ref={qrRef} className="w-[260px] h-[260px] sm:w-[300px] sm:h-[300px]" />
+          {/* Centered QR Container */}
+          <div className="w-full flex justify-center items-center mb-6">
+            <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-inner border border-slate-200 w-full max-w-[280px] sm:max-w-[332px] flex items-center justify-center mx-auto overflow-hidden">
+              <div
+                ref={qrRef}
+                className="w-full aspect-square flex items-center justify-center overflow-hidden mx-auto [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:block"
+              />
             </div>
           </div>
 
           {/* Target URL */}
-          <div className="bg-slate-100 rounded-xl p-3 mb-6 text-center">
+          <div className="w-full bg-slate-100 rounded-xl p-3 mb-6 text-center">
             <span className="text-xs text-text-muted block mb-0.5">Target Web Address:</span>
             <a
               href={targetUrl}
@@ -119,10 +122,10 @@ export default function ManualQRCodeGenerator() {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <button
               onClick={downloadSvg}
-              className="py-3.5 px-4 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-sm rounded-xl shadow-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-sm rounded-xl shadow-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>📥</span>
               <span>Download Print SVG</span>
@@ -130,7 +133,7 @@ export default function ManualQRCodeGenerator() {
 
             <button
               onClick={downloadPng}
-              className="py-3.5 px-4 bg-white hover:bg-brand-50 active:scale-98 text-brand-600 font-bold text-sm rounded-xl border border-brand-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 bg-white hover:bg-brand-50 active:scale-98 text-brand-600 font-bold text-sm rounded-xl border border-brand-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>🖼️</span>
               <span>Download Ultra-HD PNG</span>

@@ -480,9 +480,12 @@ export default function ManualPage() {
                   Formatted for 30×30 mm physical sticker printing
                 </p>
 
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-white rounded-2xl inline-block shadow-inner">
-                    <div ref={qrRef} />
+                <div className="w-full flex justify-center items-center mb-4">
+                  <div className="p-3 bg-white rounded-2xl shadow-inner border border-slate-200 w-full max-w-[260px] flex items-center justify-center mx-auto overflow-hidden">
+                    <div
+                      ref={qrRef}
+                      className="w-full aspect-square flex items-center justify-center overflow-hidden mx-auto [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:block"
+                    />
                   </div>
                 </div>
 
