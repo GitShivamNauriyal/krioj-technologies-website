@@ -475,10 +475,15 @@ export default function ManualPage() {
                 onClick={(e) => e.stopPropagation()}
                 className="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
               >
-                <h3 className="text-xl font-bold text-white mb-2">Sticker QR Code</h3>
-                <p className="text-xs text-slate-400 mb-4">
-                  Formatted for 30×30 mm physical sticker printing
-                </p>
+                <h3 className="text-xl font-bold text-white mb-1">Sticker QR Code</h3>
+                <a
+                  href={targetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-brand-300 hover:underline block mb-4 break-all"
+                >
+                  {targetUrl}
+                </a>
 
                 <div className="w-full flex justify-center items-center mb-4">
                   <div className="p-3 bg-white rounded-2xl shadow-inner border border-slate-200 w-full max-w-[260px] flex items-center justify-center mx-auto overflow-hidden">

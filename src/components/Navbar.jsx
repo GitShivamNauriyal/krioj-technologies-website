@@ -8,7 +8,6 @@ const navLinks = [
   { id: 'how-to-use', label: 'How to Use' },
   { id: 'specs', label: 'Specs' },
   { id: 'troubleshooting', label: 'Help' },
-  { id: 'qr-section', label: 'QR Manual' },
 ]
 
 export default function Navbar() {
@@ -43,10 +42,7 @@ export default function Navbar() {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -80 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled || isManualRoute || mobileOpen
             ? 'glass-nav shadow-md'
@@ -126,7 +122,7 @@ export default function Navbar() {
             </button>
           )}
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile Backdrop & Slide Menu */}
       <AnimatePresence>
