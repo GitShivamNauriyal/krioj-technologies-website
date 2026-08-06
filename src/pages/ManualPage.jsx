@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Link } from 'react-router-dom'
+import QRCodeStyling from 'qr-code-styling'
 
 const pagesData = [
   {
@@ -82,11 +83,16 @@ export default function ManualPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioProgress, setAudioProgress] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [showQrModal, setShowQrModal] = useState(false)
 
   const audioRef = useRef(null)
+  const qrRef = useRef(null)
+  const qrCodeInstance = useRef(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const lastTapTime = useRef(0)
+
+  const targetUrl = 'https://krioj.vercel.app/manual'
 
   // Stop audio helper
   const stopAudio = useCallback(() => {
@@ -117,16 +123,17 @@ export default function ManualPage() {
 
   // Play current slide audio
   const speakCurrentSlide = useCallback(() => {
+    if (showQrModal) return
     const page = pagesData[currentPage]
     const src = page.audio || page.introAudio
     if (src) {
       playAudio(src)
     }
-  }, [currentPage, playAudio])
+  }, [currentPage, playAudio, showQrModal])
 
   // Open manual view for current language
   const openManual = useCallback(() => {
-    if (currentPage === 0) return // Welcome page doesn't open manual
+    if (currentPage === 0) return
     const page = pagesData[currentPage]
     if (page.manualAudio) {
       setIsManualOpen(true)
@@ -145,21 +152,78 @@ export default function ManualPage() {
 
   // Handle slide change
   const navigateSlide = useCallback((newIndex) => {
-    if (isManualOpen) return
+    if (isManualOpen || showQrModal) return
     let target = newIndex
     if (target > 3) target = 0
     if (target < 0) target = 3
     setCurrentPage(target)
-  }, [isManualOpen])
+  }, [isManualOpen, showQrModal])
 
   useEffect(() => {
-    if (!isManualOpen && hasInteracted) {
+    if (!isManualOpen && hasInteracted && !showQrModal) {
       speakCurrentSlide()
     }
-  }, [currentPage, isManualOpen, hasInteracted, speakCurrentSlide])
+  }, [currentPage, isManualOpen, hasInteracted, speakCurrentSlide, showQrModal])
+
+  // QR Code initialization inside modal
+  useEffect(() => {
+    if (showQrModal && qrRef.current) {
+      qrCodeInstance.current = new QRCodeStyling({
+        width: 240,
+        height: 240,
+        type: 'svg',
+        data: targetUrl,
+        image: '/logo-icon.svg',
+        margin: 6,
+        qrOptions: {
+          typeNumber: 0,
+          mode: 'Byte',
+          errorCorrectionLevel: 'H',
+        },
+        imageOptions: {
+          hideBackgroundDots: true,
+          imageSize: 0.22,
+          margin: 2,
+          crossOrigin: 'anonymous',
+        },
+        dotsOptions: {
+          color: '#0f172a',
+          type: 'rounded',
+        },
+        backgroundOptions: {
+          color: '#ffffff',
+        },
+        cornersSquareOptions: {
+          color: '#1976D2',
+          type: 'extra-rounded',
+        },
+        cornersDotOptions: {
+          color: '#1565c0',
+          type: 'dot',
+        },
+      })
+      qrRef.current.innerHTML = ''
+      qrCodeInstance.current.append(qrRef.current)
+    }
+  }, [showQrModal])
+
+  const downloadQrSvg = () => {
+    qrCodeInstance.current?.download({
+      extension: 'svg',
+      name: 'tarang-manual-qr-30x30mm',
+    })
+  }
+
+  const downloadQrPng = () => {
+    qrCodeInstance.current?.download({
+      extension: 'png',
+      name: 'tarang-manual-qr-30x30mm-hd',
+    })
+  }
 
   // Double click / double tap detection
   const handleDoubleAction = useCallback(() => {
+    if (showQrModal) return
     if (isManualOpen) {
       closeManual()
     } else {
@@ -167,9 +231,8 @@ export default function ManualPage() {
         openManual()
       }
     }
-  }, [isManualOpen, closeManual, currentPage, openManual])
+  }, [isManualOpen, closeManual, currentPage, openManual, showQrModal])
 
-  // Global click / tap listener to start audio on user interaction
   const handlePointerDown = () => {
     if (!hasInteracted) {
       setHasInteracted(true)
@@ -177,12 +240,10 @@ export default function ManualPage() {
     }
   }
 
-  // Double click event on desktop
   const handleDoubleClick = () => {
     handleDoubleAction()
   }
 
-  // Touch handlers for mobile swipe & double tap
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX
   }
@@ -191,7 +252,6 @@ export default function ManualPage() {
     touchEndX.current = e.changedTouches[0].clientX
     const distance = touchEndX.current - touchStartX.current
 
-    // Double tap check
     const currentTime = new Date().getTime()
     const tapLength = currentTime - lastTapTime.current
     if (tapLength < 300 && tapLength > 0) {
@@ -200,8 +260,7 @@ export default function ManualPage() {
     }
     lastTapTime.current = currentTime
 
-    // Swipe check
-    if (Math.abs(distance) > 50 && !isManualOpen) {
+    if (Math.abs(distance) > 50 && !isManualOpen && !showQrModal) {
       if (distance < 0) {
         navigateSlide(currentPage + 1)
       } else {
@@ -210,19 +269,19 @@ export default function ManualPage() {
     }
   }
 
-  // Keyboard navigation for PC (ArrowLeft, ArrowRight, Escape, Space, Enter)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!hasInteracted) setHasInteracted(true)
 
       if (e.key === 'ArrowRight') {
-        if (!isManualOpen) navigateSlide(currentPage + 1)
+        if (!isManualOpen && !showQrModal) navigateSlide(currentPage + 1)
       } else if (e.key === 'ArrowLeft') {
-        if (!isManualOpen) navigateSlide(currentPage - 1)
+        if (!isManualOpen && !showQrModal) navigateSlide(currentPage - 1)
       } else if (e.key === 'Escape' || e.key === 'Backspace') {
-        if (isManualOpen) closeManual()
+        if (showQrModal) setShowQrModal(false)
+        else if (isManualOpen) closeManual()
       } else if (e.key === 'Enter' || e.key === ' ') {
-        if (!isManualOpen && currentPage > 0) {
+        if (!isManualOpen && currentPage > 0 && !showQrModal) {
           openManual()
         }
       }
@@ -230,9 +289,8 @@ export default function ManualPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentPage, isManualOpen, navigateSlide, closeManual, openManual, hasInteracted])
+  }, [currentPage, isManualOpen, navigateSlide, closeManual, openManual, hasInteracted, showQrModal])
 
-  // Track audio progress
   const handleTimeUpdate = () => {
     if (audioRef.current && audioRef.current.duration) {
       setAudioProgress((audioRef.current.currentTime / audioRef.current.duration) * 100)
@@ -262,7 +320,6 @@ export default function ManualPage() {
         onEnded={handleAudioEnded}
       />
 
-      {/* Screen Reader Live Region */}
       <div className="sr-only" aria-live="assertive">
         {isManualOpen
           ? `${page.manualTitle}. ${page.manualText}`
@@ -289,7 +346,7 @@ export default function ManualPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 relative">
         <AnimatePresence mode="wait">
           {!isManualOpen ? (
             /* SLIDER VIEWS (Page 0 to 3) */
@@ -339,7 +396,6 @@ export default function ManualPage() {
                 </div>
               )}
 
-              {/* Tap prompt indicator */}
               {!hasInteracted && (
                 <div className="mt-6 text-xs text-brand-300 animate-bounce">
                   👆 Tap anywhere to activate audio narration
@@ -367,7 +423,6 @@ export default function ManualPage() {
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col gap-4">
-                {/* Audio Progress */}
                 <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
                   <div
                     className="bg-brand-400 h-full transition-all duration-100"
@@ -402,13 +457,67 @@ export default function ManualPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* QR Code Download Modal */}
+        <AnimatePresence>
+          {showQrModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowQrModal(false)}
+              className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
+              >
+                <h3 className="text-xl font-bold text-white mb-2">Sticker QR Code</h3>
+                <p className="text-xs text-slate-400 mb-4">
+                  Formatted for 30×30 mm physical sticker printing
+                </p>
+
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-white rounded-2xl inline-block shadow-inner">
+                    <div ref={qrRef} />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5">
+                  <button
+                    onClick={downloadQrSvg}
+                    className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>📥</span>
+                    <span>Download SVG (Lossless Print)</span>
+                  </button>
+                  <button
+                    onClick={downloadQrPng}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-brand-300 font-bold rounded-xl text-sm border border-slate-700 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>🖼️</span>
+                    <span>Download Ultra-HD PNG</span>
+                  </button>
+                  <button
+                    onClick={() => setShowQrModal(false)}
+                    className="w-full py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 font-medium rounded-xl text-xs"
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* Footer Navigation Dots & Controls */}
+      {/* Footer Controls & Download QR Code Button */}
       <footer className="p-4 sm:p-6 glass border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 z-20">
         {!isManualOpen ? (
           <>
-            {/* Dots */}
             <div className="flex items-center gap-3">
               {pagesData.map((_, idx) => (
                 <button
@@ -427,31 +536,36 @@ export default function ManualPage() {
               ))}
             </div>
 
-            {/* Prev / Next controls for PC */}
             <div className="flex items-center gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  navigateSlide(currentPage - 1)
+                  setShowQrModal(true)
+                  stopAudio()
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 cursor-pointer"
+                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center gap-2 cursor-pointer"
               >
-                ← Prev (Left Arrow)
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  navigateSlide(currentPage + 1)
-                }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 cursor-pointer"
-              >
-                Next (Right Arrow) →
+                <span>📱</span>
+                <span>Download Sticker QR</span>
               </button>
             </div>
           </>
         ) : (
-          <div className="w-full text-center text-sm text-slate-400">
-            Double tap or click anywhere to exit manual audio
+          <div className="w-full flex items-center justify-between gap-4">
+            <span className="text-xs text-slate-400">
+              Double tap or click anywhere to exit manual audio
+            </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowQrModal(true)
+                stopAudio()
+              }}
+              className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs shadow-elevated flex items-center gap-2 cursor-pointer shrink-0"
+            >
+              <span>📱</span>
+              <span>Download Sticker QR</span>
+            </button>
           </div>
         )}
       </footer>

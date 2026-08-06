@@ -8,6 +8,7 @@ const navLinks = [
   { id: 'how-to-use', label: 'How to Use' },
   { id: 'specs', label: 'Specs' },
   { id: 'troubleshooting', label: 'Help' },
+  { id: 'qr-section', label: 'QR Manual' },
 ]
 
 export default function Navbar() {
@@ -22,6 +23,11 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
 
   const handleNav = (id) => {
     setMobileOpen(false)
@@ -42,10 +48,12 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || isManualRoute ? 'glass shadow-md' : 'bg-transparent'
+          scrolled || isManualRoute || mobileOpen
+            ? 'bg-white/90 backdrop-blur-xl shadow-md border-b border-slate-200/80'
+            : 'bg-transparent'
         }`}
       >
-        <div className="section-container flex items-center justify-between h-16">
+        <div className="section-container flex items-center justify-between h-16 px-4 sm:px-6">
           {/* Logo */}
           <Link
             to="/"
@@ -69,7 +77,7 @@ export default function Navbar() {
                 <button
                   key={link.id}
                   onClick={() => handleNav(link.id)}
-                  className="px-3 py-2 text-sm font-medium text-text-secondary hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors cursor-pointer"
+                  className="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors cursor-pointer"
                 >
                   {link.label}
                 </button>
@@ -94,59 +102,75 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Mobile menu toggle (Showcase only) */}
+          {/* Mobile menu toggle button */}
           {!isManualRoute && (
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer"
-              aria-label="Toggle menu"
+              className="md:hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             >
-              <motion.span
-                animate={mobileOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                className="w-6 h-0.5 bg-text-primary block"
-              />
-              <motion.span
-                animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="w-6 h-0.5 bg-text-primary block"
-              />
-              <motion.span
-                animate={mobileOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                className="w-6 h-0.5 bg-text-primary block"
-              />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-800">
+                {mobileOpen ? (
+                  <>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                  </>
+                )}
+              </svg>
             </button>
           )}
         </div>
       </motion.nav>
 
-      {/* Mobile drop-down menu */}
+      {/* Mobile Backdrop & Slide Menu */}
       <AnimatePresence>
         {mobileOpen && !isManualRoute && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-16 left-0 right-0 z-40 glass shadow-lg md:hidden"
-          >
-            <div className="flex flex-col py-3 px-4 gap-2">
-              {navLinks.map((link) => (
-                <button
-                  key={link.id}
-                  onClick={() => handleNav(link.id)}
-                  className="px-4 py-2.5 text-left text-sm font-medium text-text-secondary hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors cursor-pointer"
+          <>
+            {/* Dark blurred backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md md:hidden"
+            />
+
+            {/* Slide Down Menu Drawer */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl shadow-2xl border-b border-slate-200 md:hidden"
+            >
+              <div className="flex flex-col py-4 px-6 gap-3">
+                {navLinks.map((link) => (
+                  <button
+                    key={link.id}
+                    onClick={() => handleNav(link.id)}
+                    className="px-4 py-3 text-left text-base font-bold text-slate-800 hover:text-brand-600 hover:bg-brand-50/80 rounded-xl transition-all cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0"
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-slate-400 text-sm">→</span>
+                  </button>
+                ))}
+                <Link
+                  to="/manual"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-3 w-full py-3.5 text-center text-base font-bold text-white bg-brand-500 hover:bg-brand-600 active:scale-98 rounded-xl shadow-elevated flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {link.label}
-                </button>
-              ))}
-              <Link
-                to="/manual"
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 w-full py-3 text-center text-sm font-semibold text-white bg-brand-500 rounded-xl shadow-elevated"
-              >
-                🔊 Open Voice Manual
-              </Link>
-            </div>
-          </motion.div>
+                  <span>🔊</span>
+                  <span>Accessible Voice Manual</span>
+                </Link>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

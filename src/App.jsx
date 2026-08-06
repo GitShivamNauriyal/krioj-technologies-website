@@ -7,6 +7,7 @@ import InteractiveSimulator from './components/InteractiveSimulator'
 import SpecsTable from './components/SpecsTable'
 import TroubleshootingAccordion from './components/TroubleshootingAccordion'
 import SafetyGuide from './components/SafetyGuide'
+import ManualQRCodeGenerator from './components/ManualQRCodeGenerator'
 import Footer from './components/Footer'
 import ManualPage from './pages/ManualPage'
 
@@ -21,6 +22,7 @@ function ShowcasePage() {
       <SpecsTable />
       <TroubleshootingAccordion />
       <SafetyGuide />
+      <ManualQRCodeGenerator />
       <Footer />
     </div>
   )
