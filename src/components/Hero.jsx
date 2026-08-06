@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import { Link } from 'react-router-dom'
 
 export default function Hero() {
   const handleScroll = (id) => {
@@ -8,7 +9,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-12"
     >
       {/* Background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -26,7 +27,8 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-brand-50 text-brand-600 border border-brand-100 mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-brand-50 text-brand-600 border border-brand-100 mb-6">
+                <img src="/logo-icon.svg" alt="Logo" className="w-4 h-4" />
                 Krioj Technologies
               </span>
             </motion.div>
@@ -60,12 +62,13 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <button
-                onClick={() => handleScroll('audio-player')}
-                className="px-8 py-3.5 bg-brand-500 text-white font-semibold rounded-xl shadow-elevated hover:bg-brand-600 active:scale-[0.98] transition-all cursor-pointer"
+              <Link
+                to="/manual"
+                className="px-8 py-3.5 bg-brand-500 text-white font-semibold rounded-xl shadow-elevated hover:bg-brand-600 active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
               >
-                Explore Manual
-              </button>
+                <span>🔊</span>
+                <span>Accessible Voice Manual</span>
+              </Link>
               <button
                 onClick={() => handleScroll('features')}
                 className="px-8 py-3.5 bg-white text-brand-600 font-semibold rounded-xl border border-brand-200 hover:bg-brand-50 active:scale-[0.98] transition-all cursor-pointer"
@@ -99,33 +102,24 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Product image placeholder */}
+          {/* Product image */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex justify-center"
           >
-            <div className="relative w-72 h-72 sm:w-96 sm:h-96 glass-card rounded-3xl flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-32 h-32 mx-auto rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center mb-4">
-                  <span className="text-4xl font-black text-brand-600">T</span>
-                </div>
-                <p className="text-sm text-text-muted">Product Image</p>
-                <p className="text-xs text-text-muted mt-1">TARANG RF Tags</p>
+            <div className="relative glass-card rounded-3xl p-4 max-w-md shadow-2xl">
+              <img
+                src="/images/hero-product.png"
+                alt="TARANG RF Tag Set"
+                className="w-full h-auto rounded-2xl object-cover"
+              />
+              <div className="mt-3 text-center">
+                <span className="text-xs font-semibold text-text-secondary">
+                  TARANG™ RF Tags Package Set
+                </span>
               </div>
-
-              {/* Floating accent elements */}
-              <motion.div
-                animate={{ y: [-8, 8, -8] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-4 -right-4 w-16 h-16 rounded-2xl bg-brand-500 opacity-10"
-              />
-              <motion.div
-                animate={{ y: [8, -8, 8] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-brand-400 opacity-10"
-              />
             </div>
           </motion.div>
         </div>
