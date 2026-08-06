@@ -306,7 +306,7 @@ export default function ManualPage() {
 
   return (
     <div
-      className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between select-none touch-none overflow-hidden relative"
+      className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto relative pb-12"
       onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}
       onTouchStart={handleTouchStart}
@@ -332,9 +332,9 @@ export default function ManualPage() {
           : `Page ${currentPage + 1} of 4. ${page.title}. ${page.instruction}`}
       </div>
 
-      {/* Top Header Bar */}
+      {/* Top Header Bar - Single line layout for mobile */}
       <header
-        className="p-4 sm:p-6 flex items-center justify-between z-20"
+        className="px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-2 z-20"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(16px)',
@@ -345,22 +345,22 @@ export default function ManualPage() {
         <Link
           to="/"
           onClick={(e) => e.stopPropagation()}
-          className="px-4 py-2 bg-white hover:bg-brand-50 text-brand-600 font-semibold rounded-xl border border-brand-200 text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+          className="px-2.5 py-1.5 sm:px-4 sm:py-2 bg-white hover:bg-brand-50 text-brand-600 font-semibold rounded-xl border border-brand-200 text-xs sm:text-sm shadow-sm flex items-center gap-1 shrink-0 transition-all cursor-pointer"
         >
           <span>←</span>
-          <span>Showcase Site</span>
+          <span>Showcase</span>
         </Link>
 
-        <div className="flex items-center gap-2 px-3 py-1 bg-brand-50 rounded-full border border-brand-100">
-          <span className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping" />
-          <span className="text-xs text-brand-700 font-semibold uppercase tracking-wider">
-            Accessible Voice Mode
+        <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1 bg-brand-50 rounded-full border border-brand-100 shrink-0">
+          <span className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
+          <span className="text-[11px] sm:text-xs text-brand-700 font-semibold uppercase tracking-wider">
+            Voice Mode
           </span>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10 py-8">
         <AnimatePresence mode="wait">
           {!isManualOpen ? (
             /* SLIDER VIEWS (Page 0 to 3) */
@@ -370,30 +370,30 @@ export default function ManualPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-8 sm:p-12 text-center shadow-xl backdrop-blur-xl relative"
+              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-6 sm:p-12 text-center shadow-xl backdrop-blur-xl relative"
             >
               {currentPage === 0 ? (
                 <div>
-                  <h1 className="text-5xl sm:text-7xl font-black text-brand-600 tracking-wider mb-2">
+                  <h1 className="text-4xl sm:text-7xl font-black text-brand-600 tracking-wider mb-2">
                     {page.title}
                   </h1>
-                  <h2 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-8">
+                  <h2 className="text-xl sm:text-4xl font-bold text-slate-800 mb-6 sm:mb-8">
                     {page.subtitle}
                   </h2>
-                  <p className="text-lg sm:text-2xl text-slate-600 whitespace-pre-line leading-relaxed font-medium">
+                  <p className="text-base sm:text-2xl text-slate-600 whitespace-pre-line leading-relaxed font-medium">
                     {page.instruction}
                   </p>
                 </div>
               ) : (
                 <div>
-                  <div className="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs uppercase font-bold tracking-widest mb-6">
+                  <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-[11px] sm:text-xs uppercase font-bold tracking-widest mb-4 sm:mb-6">
                     Language Selection
                   </div>
-                  <h1 className="text-5xl sm:text-7xl font-black text-slate-900 mb-8">
+                  <h1 className="text-4xl sm:text-7xl font-black text-slate-900 mb-6 sm:mb-8">
                     {page.title}
                   </h1>
-                  <div className="p-6 bg-brand-50/80 rounded-2xl border border-brand-200/70 mb-8 shadow-inner">
-                    <p className="text-lg sm:text-2xl text-brand-900 whitespace-pre-line font-semibold leading-relaxed">
+                  <div className="p-4 sm:p-6 bg-brand-50/80 rounded-2xl border border-brand-200/70 mb-6 sm:mb-8 shadow-inner">
+                    <p className="text-base sm:text-2xl text-brand-900 whitespace-pre-line font-semibold leading-relaxed">
                       {page.instruction}
                     </p>
                   </div>
@@ -402,7 +402,7 @@ export default function ManualPage() {
                       e.stopPropagation()
                       openManual()
                     }}
-                    className="w-full py-4 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-xl rounded-2xl shadow-elevated transition-all flex items-center justify-center gap-3 cursor-pointer"
+                    className="w-full py-3.5 sm:py-4 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>🔊</span>
                     <span>Listen Manual ({page.title})</span>
@@ -411,7 +411,7 @@ export default function ManualPage() {
               )}
 
               {!hasInteracted && (
-                <div className="mt-6 text-xs text-brand-600 font-semibold animate-bounce">
+                <div className="mt-4 sm:mt-6 text-xs text-brand-600 font-semibold animate-bounce">
                   👆 Tap anywhere to activate audio narration
                 </div>
               )}
@@ -427,30 +427,30 @@ export default function ManualPage() {
               className="w-full max-w-2xl bg-white/95 border border-slate-200/80 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl max-h-[75vh] flex flex-col justify-between"
             >
               <div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-brand-600 text-center mb-6 border-b border-slate-200 pb-4">
+                <h1 className="text-xl sm:text-4xl font-bold text-brand-600 text-center mb-4 sm:mb-6 border-b border-slate-200 pb-3 sm:pb-4">
                   {page.manualTitle}
                 </h1>
 
-                <div className="text-slate-800 text-base sm:text-xl font-medium leading-relaxed whitespace-pre-line overflow-y-auto max-h-[40vh] pr-2 scrollbar-thin">
+                <div className="text-slate-800 text-sm sm:text-xl font-medium leading-relaxed whitespace-pre-line overflow-y-auto max-h-[35vh] sm:max-h-[40vh] pr-2 scrollbar-thin">
                   {page.manualText}
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col gap-4">
-                <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-200 flex flex-col gap-3 sm:gap-4">
+                <div className="w-full bg-slate-200 h-2 sm:h-2.5 rounded-full overflow-hidden">
                   <div
                     className="bg-brand-500 h-full transition-all duration-100"
                     style={{ width: `${audioProgress}%` }}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       playAudio(page.manualAudio)
                     }}
-                    className="py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="py-3 sm:py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base rounded-xl shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>🔊</span>
                     <span>Replay Audio</span>
@@ -461,7 +461,7 @@ export default function ManualPage() {
                       e.stopPropagation()
                       closeManual()
                     }}
-                    className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="py-3 sm:py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm sm:text-base rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>←</span>
                     <span>Back</span>
@@ -536,9 +536,9 @@ export default function ManualPage() {
         </AnimatePresence>
       </main>
 
-      {/* Footer Controls & Download QR Code Button */}
+      {/* Footer Controls & Small Download QR Button on Bottom Left */}
       <footer
-        className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 z-20"
+        className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 z-20 mt-6"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(16px)',
@@ -546,9 +546,23 @@ export default function ManualPage() {
           borderTop: '1px solid rgba(226, 232, 240, 0.8)',
         }}
       >
-        {!isManualOpen ? (
-          <>
-            <div className="flex items-center gap-3">
+        <div className="w-full flex items-center justify-between gap-3">
+          {/* Small Download QR Button on Bottom Left */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowQrModal(true)
+              stopAudio()
+            }}
+            className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+          >
+            <span>📱</span>
+            <span>Download QR</span>
+          </button>
+
+          {/* Dots on Right */}
+          {!isManualOpen && (
+            <div className="flex items-center gap-2">
               {pagesData.map((_, idx) => (
                 <button
                   key={idx}
@@ -556,48 +570,17 @@ export default function ManualPage() {
                     e.stopPropagation()
                     navigateSlide(idx)
                   }}
-                  className={`h-3 rounded-full transition-all cursor-pointer ${
+                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
                     currentPage === idx
-                      ? 'w-8 bg-brand-500'
-                      : 'w-3 bg-slate-300 hover:bg-slate-400'
+                      ? 'w-6 bg-brand-500'
+                      : 'w-2.5 bg-slate-300 hover:bg-slate-400'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
             </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowQrModal(true)
-                  stopAudio()
-                }}
-                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center gap-2 cursor-pointer transition-all"
-              >
-                <span>📱</span>
-                <span>Download Sticker QR</span>
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="w-full flex items-center justify-between gap-4">
-            <span className="text-xs text-slate-500 font-medium">
-              Double tap or click anywhere to exit manual audio
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowQrModal(true)
-                stopAudio()
-              }}
-              className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs shadow-elevated flex items-center gap-2 cursor-pointer shrink-0 transition-all"
-            >
-              <span>📱</span>
-              <span>Download Sticker QR</span>
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </footer>
     </div>
   )
