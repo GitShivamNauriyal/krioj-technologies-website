@@ -306,7 +306,7 @@ export default function ManualPage() {
 
   return (
     <div
-      className="min-h-screen bg-slate-900 text-white flex flex-col justify-between select-none touch-none overflow-hidden relative"
+      className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between select-none touch-none overflow-hidden relative"
       onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}
       onTouchStart={handleTouchStart}
@@ -320,6 +320,12 @@ export default function ManualPage() {
         onEnded={handleAudioEnded}
       />
 
+      {/* Decorative ambient background blur orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-brand-100/60 rounded-full opacity-70 blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-200/50 rounded-full opacity-60 blur-3xl" />
+      </div>
+
       <div className="sr-only" aria-live="assertive">
         {isManualOpen
           ? `${page.manualTitle}. ${page.manualText}`
@@ -327,26 +333,34 @@ export default function ManualPage() {
       </div>
 
       {/* Top Header Bar */}
-      <header className="p-4 sm:p-6 flex items-center justify-between glass border-b border-slate-800 z-20">
+      <header
+        className="p-4 sm:p-6 flex items-center justify-between z-20"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+        }}
+      >
         <Link
           to="/"
           onClick={(e) => e.stopPropagation()}
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-brand-300 font-semibold rounded-xl border border-slate-700 text-sm flex items-center gap-2"
+          className="px-4 py-2 bg-white hover:bg-brand-50 text-brand-600 font-semibold rounded-xl border border-brand-200 text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
         >
           <span>←</span>
           <span>Showcase Site</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-brand-400 animate-ping" />
-          <span className="text-xs text-brand-300 font-semibold uppercase tracking-wider">
+        <div className="flex items-center gap-2 px-3 py-1 bg-brand-50 rounded-full border border-brand-100">
+          <span className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping" />
+          <span className="text-xs text-brand-700 font-semibold uppercase tracking-wider">
             Accessible Voice Mode
           </span>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 relative">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
         <AnimatePresence mode="wait">
           {!isManualOpen ? (
             /* SLIDER VIEWS (Page 0 to 3) */
@@ -356,30 +370,30 @@ export default function ManualPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-xl bg-slate-800/90 border border-slate-700 rounded-3xl p-8 sm:p-12 text-center shadow-2xl backdrop-blur-xl relative"
+              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-8 sm:p-12 text-center shadow-xl backdrop-blur-xl relative"
             >
               {currentPage === 0 ? (
                 <div>
-                  <h1 className="text-5xl sm:text-7xl font-black text-brand-400 tracking-wider mb-2">
+                  <h1 className="text-5xl sm:text-7xl font-black text-brand-600 tracking-wider mb-2">
                     {page.title}
                   </h1>
-                  <h2 className="text-2xl sm:text-4xl font-bold text-slate-200 mb-8">
+                  <h2 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-8">
                     {page.subtitle}
                   </h2>
-                  <p className="text-lg sm:text-2xl text-slate-300 whitespace-pre-line leading-relaxed">
+                  <p className="text-lg sm:text-2xl text-slate-600 whitespace-pre-line leading-relaxed font-medium">
                     {page.instruction}
                   </p>
                 </div>
               ) : (
                 <div>
-                  <div className="inline-block px-4 py-1 rounded-full bg-brand-900/60 text-brand-300 border border-brand-700 text-xs uppercase font-bold tracking-widest mb-6">
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs uppercase font-bold tracking-widest mb-6">
                     Language Selection
                   </div>
-                  <h1 className="text-5xl sm:text-7xl font-black text-white mb-8">
+                  <h1 className="text-5xl sm:text-7xl font-black text-slate-900 mb-8">
                     {page.title}
                   </h1>
-                  <div className="p-6 bg-brand-950/40 rounded-2xl border border-brand-800/50 mb-8">
-                    <p className="text-lg sm:text-2xl text-brand-200 whitespace-pre-line font-medium leading-relaxed">
+                  <div className="p-6 bg-brand-50/80 rounded-2xl border border-brand-200/70 mb-8 shadow-inner">
+                    <p className="text-lg sm:text-2xl text-brand-900 whitespace-pre-line font-semibold leading-relaxed">
                       {page.instruction}
                     </p>
                   </div>
@@ -397,7 +411,7 @@ export default function ManualPage() {
               )}
 
               {!hasInteracted && (
-                <div className="mt-6 text-xs text-brand-300 animate-bounce">
+                <div className="mt-6 text-xs text-brand-600 font-semibold animate-bounce">
                   👆 Tap anywhere to activate audio narration
                 </div>
               )}
@@ -410,22 +424,22 @@ export default function ManualPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-2xl bg-slate-800/95 border border-slate-700 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl max-h-[75vh] flex flex-col justify-between"
+              className="w-full max-w-2xl bg-white/95 border border-slate-200/80 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl max-h-[75vh] flex flex-col justify-between"
             >
               <div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-brand-300 text-center mb-6 border-b border-slate-700 pb-4">
+                <h1 className="text-2xl sm:text-4xl font-bold text-brand-600 text-center mb-6 border-b border-slate-200 pb-4">
                   {page.manualTitle}
                 </h1>
 
-                <div className="text-slate-100 text-base sm:text-xl leading-relaxed whitespace-pre-line overflow-y-auto max-h-[40vh] pr-2 scrollbar-thin">
+                <div className="text-slate-800 text-base sm:text-xl font-medium leading-relaxed whitespace-pre-line overflow-y-auto max-h-[40vh] pr-2 scrollbar-thin">
                   {page.manualText}
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col gap-4">
-                <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+              <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col gap-4">
+                <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                   <div
-                    className="bg-brand-400 h-full transition-all duration-100"
+                    className="bg-brand-500 h-full transition-all duration-100"
                     style={{ width: `${audioProgress}%` }}
                   />
                 </div>
@@ -436,7 +450,7 @@ export default function ManualPage() {
                       e.stopPropagation()
                       playAudio(page.manualAudio)
                     }}
-                    className="py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                    className="py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>🔊</span>
                     <span>Replay Audio</span>
@@ -447,7 +461,7 @@ export default function ManualPage() {
                       e.stopPropagation()
                       closeManual()
                     }}
-                    className="py-3.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                    className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>←</span>
                     <span>Back</span>
@@ -466,21 +480,21 @@ export default function ManualPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowQrModal(false)}
-              className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
+                className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
               >
-                <h3 className="text-xl font-bold text-white mb-1">Sticker QR Code</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Sticker QR Code</h3>
                 <a
                   href={targetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-brand-300 hover:underline block mb-4 break-all"
+                  className="text-xs text-brand-600 font-semibold hover:underline block mb-4 break-all"
                 >
                   {targetUrl}
                 </a>
@@ -497,21 +511,21 @@ export default function ManualPage() {
                 <div className="flex flex-col gap-2.5">
                   <button
                     onClick={downloadQrSvg}
-                    className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>📥</span>
                     <span>Download SVG (Lossless Print)</span>
                   </button>
                   <button
                     onClick={downloadQrPng}
-                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-brand-300 font-bold rounded-xl text-sm border border-slate-700 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 bg-white hover:bg-brand-50 text-brand-600 font-bold rounded-xl text-sm border border-brand-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>🖼️</span>
                     <span>Download Ultra-HD PNG</span>
                   </button>
                   <button
                     onClick={() => setShowQrModal(false)}
-                    className="w-full py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 font-medium rounded-xl text-xs"
+                    className="w-full py-2.5 bg-transparent hover:bg-slate-100 text-slate-500 font-medium rounded-xl text-xs"
                   >
                     Close
                   </button>
@@ -523,7 +537,15 @@ export default function ManualPage() {
       </main>
 
       {/* Footer Controls & Download QR Code Button */}
-      <footer className="p-4 sm:p-6 glass border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 z-20">
+      <footer
+        className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 z-20"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+        }}
+      >
         {!isManualOpen ? (
           <>
             <div className="flex items-center gap-3">
@@ -536,8 +558,8 @@ export default function ManualPage() {
                   }}
                   className={`h-3 rounded-full transition-all cursor-pointer ${
                     currentPage === idx
-                      ? 'w-8 bg-brand-400'
-                      : 'w-3 bg-slate-600 hover:bg-slate-500'
+                      ? 'w-8 bg-brand-500'
+                      : 'w-3 bg-slate-300 hover:bg-slate-400'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -551,7 +573,7 @@ export default function ManualPage() {
                   setShowQrModal(true)
                   stopAudio()
                 }}
-                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center gap-2 cursor-pointer transition-all"
               >
                 <span>📱</span>
                 <span>Download Sticker QR</span>
@@ -560,7 +582,7 @@ export default function ManualPage() {
           </>
         ) : (
           <div className="w-full flex items-center justify-between gap-4">
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500 font-medium">
               Double tap or click anywhere to exit manual audio
             </span>
             <button
@@ -569,7 +591,7 @@ export default function ManualPage() {
                 setShowQrModal(true)
                 stopAudio()
               }}
-              className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs shadow-elevated flex items-center gap-2 cursor-pointer shrink-0"
+              className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs shadow-elevated flex items-center gap-2 cursor-pointer shrink-0 transition-all"
             >
               <span>📱</span>
               <span>Download Sticker QR</span>
