@@ -47,7 +47,6 @@
   }
 }
 
-
 ::selection {
   background-color: var(--color-brand-200);
   color: var(--color-brand-900);
@@ -86,6 +85,20 @@
     box-shadow: var(--shadow-glass);
   }
 
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.70);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  .glass-drawer {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
   .section-container {
     width: 100%;
     max-width: 1200px;
@@ -105,4 +118,3 @@
     }
   }
 }
-

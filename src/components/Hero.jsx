@@ -102,30 +102,26 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Product image display with floating blue hovering balls */}
+          {/* Product image display with subtle ambient glowing blue orbs */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex justify-center relative"
           >
-            {/* Top-Right Floating Blue Orb */}
+            {/* Top-Right Subtle Ambient Blue Glow */}
             <motion.div
-              animate={{ y: [-10, 10, -10], rotate: [0, 10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-6 -right-6 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-brand-500 to-brand-300 opacity-80 shadow-lg blur-[1px] z-20 flex items-center justify-center pointer-events-none"
-            >
-              <div className="w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm" />
-            </motion.div>
-
-            {/* Bottom-Left Floating Blue Orb */}
-            <motion.div
-              animate={{ y: [10, -10, 10], rotate: [0, -10, 0] }}
+              animate={{ y: [-8, 8, -8], scale: [0.95, 1.05, 0.95] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -bottom-6 -left-6 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 opacity-80 shadow-xl blur-[1px] z-20 flex items-center justify-center pointer-events-none"
-            >
-              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm" />
-            </motion.div>
+              className="absolute -top-8 -right-8 w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-brand-300/35 blur-2xl z-0 pointer-events-none"
+            />
+
+            {/* Bottom-Left Subtle Ambient Blue Glow */}
+            <motion.div
+              animate={{ y: [8, -8, 8], scale: [1.05, 0.95, 1.05] }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -bottom-8 -left-8 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-brand-400/30 blur-2xl z-0 pointer-events-none"
+            />
 
             <div className="relative glass-card rounded-3xl p-4 max-w-md shadow-2xl z-10">
               <img

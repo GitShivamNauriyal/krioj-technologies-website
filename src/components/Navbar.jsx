@@ -49,7 +49,7 @@ export default function Navbar() {
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled || isManualRoute || mobileOpen
-            ? 'bg-white/90 backdrop-blur-xl shadow-md border-b border-slate-200/80'
+            ? 'glass-nav shadow-md'
             : 'bg-transparent'
         }`}
       >
@@ -106,7 +106,7 @@ export default function Navbar() {
           {!isManualRoute && (
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="md:hidden w-10 h-10 rounded-xl bg-slate-100/80 hover:bg-slate-200 active:scale-95 flex items-center justify-center cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-800">
@@ -138,7 +138,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md md:hidden"
+              className="fixed inset-0 z-40 bg-slate-900/35 backdrop-blur-md md:hidden"
             />
 
             {/* Slide Down Menu Drawer */}
@@ -147,14 +147,14 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl shadow-2xl border-b border-slate-200 md:hidden"
+              className="fixed top-16 left-0 right-0 z-40 glass-drawer shadow-2xl md:hidden"
             >
               <div className="flex flex-col py-4 px-6 gap-3">
                 {navLinks.map((link) => (
                   <button
                     key={link.id}
                     onClick={() => handleNav(link.id)}
-                    className="px-4 py-3 text-left text-base font-bold text-slate-800 hover:text-brand-600 hover:bg-brand-50/80 rounded-xl transition-all cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0"
+                    className="px-4 py-3 text-left text-base font-bold text-slate-800 hover:text-brand-600 hover:bg-brand-50/80 rounded-xl transition-all cursor-pointer flex items-center justify-between border-b border-slate-200/60 last:border-0"
                   >
                     <span>{link.label}</span>
                     <span className="text-slate-400 text-sm">→</span>
