@@ -91,6 +91,7 @@ export default function ManualPage() {
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const lastTapTime = useRef(0)
+  const lastDoubleActionTimeRef = useRef(0)
 
   const targetUrl = 'https://tarang.krioj.co.in/manual'
 
@@ -104,7 +105,7 @@ export default function ManualPage() {
     setAudioProgress(0)
   }, [])
 
-  // Play audio helper
+  // Play audio helper - with robust promise error handling for mobile Safari/Chrome
   const playAudio = useCallback((src) => {
     stopAudio()
     if (!audioRef.current) return
@@ -159,11 +160,12 @@ export default function ManualPage() {
     setCurrentPage(target)
   }, [isManualOpen, showQrModal])
 
+  // Auto-play when slide changes AFTER initial user interaction
   useEffect(() => {
     if (!isManualOpen && hasInteracted && !showQrModal) {
       speakCurrentSlide()
     }
-  }, [currentPage, isManualOpen, hasInteracted, speakCurrentSlide, showQrModal])
+  }, [currentPage, isManualOpen, speakCurrentSlide, showQrModal]) // Note: hasInteracted intentionally excluded to prevent double-play race on tap 1
 
   // QR Code initialization inside modal
   useEffect(() => {
@@ -221,8 +223,14 @@ export default function ManualPage() {
     })
   }
 
-  // Double click / double tap detection
+  // Debounced Double Action (handles both touch double-tap and mouse double-click without double execution)
   const handleDoubleAction = useCallback(() => {
+    const now = Date.now()
+    if (now - lastDoubleActionTimeRef.current < 450) {
+      return // Ignore synthesized duplicate dblclick event on mobile
+    }
+    lastDoubleActionTimeRef.current = now
+
     if (showQrModal) return
     if (isManualOpen) {
       closeManual()
@@ -233,14 +241,22 @@ export default function ManualPage() {
     }
   }, [isManualOpen, closeManual, currentPage, openManual, showQrModal])
 
-  const handlePointerDown = () => {
+  // Single user tap/click handler for unlocking audio on mobile
+  const handleUserInteraction = () => {
     if (!hasInteracted) {
       setHasInteracted(true)
+      speakCurrentSlide()
+    } else if (currentPage === 0 && !isPlaying && !isManualOpen && !showQrModal) {
       speakCurrentSlide()
     }
   }
 
-  const handleDoubleClick = () => {
+  const handlePointerDown = () => {
+    handleUserInteraction()
+  }
+
+  const handleDoubleClick = (e) => {
+    e.stopPropagation()
     handleDoubleAction()
   }
 
@@ -260,7 +276,8 @@ export default function ManualPage() {
     }
     lastTapTime.current = currentTime
 
-    if (Math.abs(distance) > 50 && !isManualOpen && !showQrModal) {
+    // Swipe left / right navigation
+    if (Math.abs(distance) > 40 && !isManualOpen && !showQrModal) {
       if (distance < 0) {
         navigateSlide(currentPage + 1)
       } else {
@@ -308,9 +325,11 @@ export default function ManualPage() {
     <div
       className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto overflow-x-hidden w-full max-w-full box-border relative pb-12"
       onPointerDown={handlePointerDown}
+      onClick={handleUserInteraction}
       onDoubleClick={handleDoubleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'manipulation' }}
       tabIndex={0}
       aria-label="Accessible Audio Voice Manual Viewport"
     >
@@ -332,7 +351,7 @@ export default function ManualPage() {
           : `Page ${currentPage + 1} of 4. ${page.title}. ${page.instruction}`}
       </div>
 
-      {/* Top Header Bar - Single line layout for mobile */}
+      {/* Top Header Bar */}
       <header
         className="px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-2 z-20"
         style={{
@@ -370,7 +389,8 @@ export default function ManualPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-6 sm:p-12 text-center shadow-xl backdrop-blur-xl relative"
+              onClick={handleUserInteraction}
+              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-6 sm:p-12 text-center shadow-xl backdrop-blur-xl relative cursor-pointer"
             >
               {currentPage === 0 ? (
                 <div>
@@ -383,6 +403,18 @@ export default function ManualPage() {
                   <p className="text-base sm:text-2xl text-slate-600 whitespace-pre-line leading-relaxed font-medium">
                     {page.instruction}
                   </p>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleUserInteraction()
+                    }}
+                    className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-bold rounded-2xl text-sm shadow-md transition-all cursor-pointer"
+                  >
+                    <span>🔊</span>
+                    <span>{isPlaying ? 'Playing Welcome Audio...' : 'Tap to Listen Welcome Audio'}</span>
+                  </button>
                 </div>
               ) : (
                 <div>
@@ -398,6 +430,7 @@ export default function ManualPage() {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       openManual()
@@ -446,34 +479,38 @@ export default function ManualPage() {
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      playAudio(page.manualAudio)
+                      if (isPlaying) {
+                        stopAudio()
+                      } else {
+                        speakCurrentSlide()
+                      }
                     }}
-                    className="py-3 sm:py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base rounded-xl shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs sm:text-sm border border-slate-300 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
-                    <span>🔊</span>
-                    <span>Replay Audio</span>
+                    <span>{isPlaying ? '⏸️' : '▶️'}</span>
+                    <span>{isPlaying ? 'Pause' : 'Replay'}</span>
                   </button>
 
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       closeManual()
                     }}
-                    className="py-3 sm:py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm sm:text-base rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>←</span>
-                    <span>Back</span>
+                    <span>Back (or Double Tap)</span>
                   </button>
                 </div>
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
 
-        {/* QR Code Download Modal */}
-        <AnimatePresence>
+          {/* QR Code Modal Popup */}
           {showQrModal && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -510,6 +547,7 @@ export default function ManualPage() {
 
                 <div className="flex flex-col gap-2.5">
                   <button
+                    type="button"
                     onClick={downloadQrSvg}
                     className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
@@ -517,6 +555,7 @@ export default function ManualPage() {
                     <span>Download SVG (Lossless Print)</span>
                   </button>
                   <button
+                    type="button"
                     onClick={downloadQrPng}
                     className="w-full py-3 bg-white hover:bg-brand-50 text-brand-600 font-bold rounded-xl text-sm border border-brand-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
@@ -524,6 +563,7 @@ export default function ManualPage() {
                     <span>Download Ultra-HD PNG</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setShowQrModal(false)}
                     className="w-full py-2.5 bg-transparent hover:bg-slate-100 text-slate-500 font-medium rounded-xl text-xs"
                   >
@@ -549,6 +589,7 @@ export default function ManualPage() {
         <div className="w-full flex items-center justify-between gap-3">
           {/* Small Download QR Button on Bottom Left */}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation()
               setShowQrModal(true)
@@ -566,6 +607,7 @@ export default function ManualPage() {
               {pagesData.map((_, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation()
                     navigateSlide(idx)
