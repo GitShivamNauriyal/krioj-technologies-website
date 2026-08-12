@@ -132,7 +132,7 @@ export default function ProductManagementPage() {
     }, 10000)
   }
 
-  // Batch Download all 100 items (300 SVGs: T, R1, R2 for each device 00 to 99) for current Lot
+  // Batch Download all 100 SVGs for current Lot (devices 00 to 99 for selected device type)
   const handleBatchDownloadAll100 = async () => {
     setIsExportingBatch(true)
     setBatchProgress(0)
@@ -143,28 +143,15 @@ export default function ProductManagementPage() {
 
     for (let i = 0; i <= 99; i++) {
       const devStr = String(i).padStart(2, '0')
-      
-      // Download Transmitter tag (e.g. T-26-08-00-00)
-      const tSerial = `T-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(tSerial)
+      const serialStr = `${deviceType}-${yy}-${mm}-${lotStr}-${devStr}`
+      await downloadStickerSvg(serialStr)
       await new Promise((r) => setTimeout(r, 120))
-
-      // Download Receiver 1 tag (e.g. R1-26-08-00-00)
-      const r1Serial = `R1-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(r1Serial)
-      await new Promise((r) => setTimeout(r, 120))
-
-      // Download Receiver 2 tag (e.g. R2-26-08-00-00)
-      const r2Serial = `R2-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(r2Serial)
-      await new Promise((r) => setTimeout(r, 120))
-
       setBatchProgress(i + 1)
     }
 
     setIsExportingBatch(false)
 
-    // Auto-increment Lot Number (00 to 99) after downloading all 100 sets for that lot!
+    // Auto-increment Lot Number (00 to 99) after downloading all 100 SVGs for that lot!
     setLotNo((prevLot) => (prevLot + 1) % 100)
     setDeviceNo(0)
   }
@@ -364,7 +351,7 @@ export default function ProductManagementPage() {
               {isExportingBatch && (
                 <div className="p-4 bg-brand-50 border border-brand-200 rounded-2xl text-center space-y-2">
                   <div className="text-xs font-bold text-brand-700">
-                    Downloading All 100 Sets for Lot {formattedLot} ({batchProgress}/100 sets)...
+                    Downloading All 100 SVGs for Lot {formattedLot} ({batchProgress}/100 tags)...
                   </div>
                   <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                     <div
@@ -383,7 +370,7 @@ export default function ProductManagementPage() {
                   className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
                   <span>📥</span>
-                  <span>Download Single SVG (krioj_{currentSerialNo}.svg)</span>
+                  <span>Download Single Tag (krioj_{currentSerialNo}.svg)</span>
                 </button>
 
                 <button
@@ -395,8 +382,8 @@ export default function ProductManagementPage() {
                   <span>📦</span>
                   <span>
                     {isExportingBatch
-                      ? `Exporting Lot ${formattedLot} (${batchProgress}/100)...`
-                      : `Download All 100 Sets for Lot ${formattedLot} (300 SVGs)`}
+                      ? `Exporting Lot ${formattedLot} (${batchProgress}/100 tags)...`
+                      : `Download All 100 SVGs for Lot ${formattedLot} (${deviceType})`}
                   </span>
                 </button>
               </div>
