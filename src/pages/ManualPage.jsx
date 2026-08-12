@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Link } from 'react-router-dom'
-import QRCodeStyling from 'qr-code-styling'
 
 const pagesData = [
   {
@@ -83,17 +82,12 @@ export default function ManualPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioProgress, setAudioProgress] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [showQrModal, setShowQrModal] = useState(false)
 
   const audioRef = useRef(null)
-  const qrRef = useRef(null)
-  const qrCodeInstance = useRef(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const lastTapTime = useRef(0)
   const lastDoubleActionTimeRef = useRef(0)
-
-  const targetUrl = 'https://tarang.krioj.co.in/manual'
 
   // Stop audio helper
   const stopAudio = useCallback(() => {
@@ -124,13 +118,12 @@ export default function ManualPage() {
 
   // Play current slide audio
   const speakCurrentSlide = useCallback(() => {
-    if (showQrModal) return
     const page = pagesData[currentPage]
     const src = page.audio || page.introAudio
     if (src) {
       playAudio(src)
     }
-  }, [currentPage, playAudio, showQrModal])
+  }, [currentPage, playAudio])
 
   // Open manual view for current language
   const openManual = useCallback(() => {
@@ -153,75 +146,19 @@ export default function ManualPage() {
 
   // Handle slide change
   const navigateSlide = useCallback((newIndex) => {
-    if (isManualOpen || showQrModal) return
+    if (isManualOpen) return
     let target = newIndex
     if (target > 3) target = 0
     if (target < 0) target = 3
     setCurrentPage(target)
-  }, [isManualOpen, showQrModal])
+  }, [isManualOpen])
 
   // Auto-play when slide changes AFTER initial user interaction
   useEffect(() => {
-    if (!isManualOpen && hasInteracted && !showQrModal) {
+    if (!isManualOpen && hasInteracted) {
       speakCurrentSlide()
     }
-  }, [currentPage, isManualOpen, speakCurrentSlide, showQrModal]) // Note: hasInteracted intentionally excluded to prevent double-play race on tap 1
-
-  // QR Code initialization inside modal
-  useEffect(() => {
-    if (showQrModal && qrRef.current) {
-      qrCodeInstance.current = new QRCodeStyling({
-        width: 240,
-        height: 240,
-        type: 'svg',
-        data: targetUrl,
-        image: '/logo-icon.svg',
-        margin: 6,
-        qrOptions: {
-          typeNumber: 0,
-          mode: 'Byte',
-          errorCorrectionLevel: 'H',
-        },
-        imageOptions: {
-          hideBackgroundDots: true,
-          imageSize: 0.22,
-          margin: 2,
-          crossOrigin: 'anonymous',
-        },
-        dotsOptions: {
-          color: '#0f172a',
-          type: 'rounded',
-        },
-        backgroundOptions: {
-          color: '#ffffff',
-        },
-        cornersSquareOptions: {
-          color: '#1976D2',
-          type: 'extra-rounded',
-        },
-        cornersDotOptions: {
-          color: '#1565c0',
-          type: 'dot',
-        },
-      })
-      qrRef.current.innerHTML = ''
-      qrCodeInstance.current.append(qrRef.current)
-    }
-  }, [showQrModal])
-
-  const downloadQrSvg = () => {
-    qrCodeInstance.current?.download({
-      extension: 'svg',
-      name: 'tarang-manual-qr-30x30mm',
-    })
-  }
-
-  const downloadQrPng = () => {
-    qrCodeInstance.current?.download({
-      extension: 'png',
-      name: 'tarang-manual-qr-30x30mm-hd',
-    })
-  }
+  }, [currentPage, isManualOpen, speakCurrentSlide])
 
   // Debounced Double Action (handles both touch double-tap and mouse double-click without double execution)
   const handleDoubleAction = useCallback(() => {
@@ -231,7 +168,6 @@ export default function ManualPage() {
     }
     lastDoubleActionTimeRef.current = now
 
-    if (showQrModal) return
     if (isManualOpen) {
       closeManual()
     } else {
@@ -239,14 +175,14 @@ export default function ManualPage() {
         openManual()
       }
     }
-  }, [isManualOpen, closeManual, currentPage, openManual, showQrModal])
+  }, [isManualOpen, closeManual, currentPage, openManual])
 
   // Single user tap/click handler for unlocking audio on mobile
   const handleUserInteraction = () => {
     if (!hasInteracted) {
       setHasInteracted(true)
       speakCurrentSlide()
-    } else if (currentPage === 0 && !isPlaying && !isManualOpen && !showQrModal) {
+    } else if (currentPage === 0 && !isPlaying && !isManualOpen) {
       speakCurrentSlide()
     }
   }
@@ -277,7 +213,7 @@ export default function ManualPage() {
     lastTapTime.current = currentTime
 
     // Swipe left / right navigation
-    if (Math.abs(distance) > 40 && !isManualOpen && !showQrModal) {
+    if (Math.abs(distance) > 40 && !isManualOpen) {
       if (distance < 0) {
         navigateSlide(currentPage + 1)
       } else {
@@ -291,14 +227,13 @@ export default function ManualPage() {
       if (!hasInteracted) setHasInteracted(true)
 
       if (e.key === 'ArrowRight') {
-        if (!isManualOpen && !showQrModal) navigateSlide(currentPage + 1)
+        if (!isManualOpen) navigateSlide(currentPage + 1)
       } else if (e.key === 'ArrowLeft') {
-        if (!isManualOpen && !showQrModal) navigateSlide(currentPage - 1)
+        if (!isManualOpen) navigateSlide(currentPage - 1)
       } else if (e.key === 'Escape' || e.key === 'Backspace') {
-        if (showQrModal) setShowQrModal(false)
-        else if (isManualOpen) closeManual()
+        if (isManualOpen) closeManual()
       } else if (e.key === 'Enter' || e.key === ' ') {
-        if (!isManualOpen && currentPage > 0 && !showQrModal) {
+        if (!isManualOpen && currentPage > 0) {
           openManual()
         }
       }
@@ -306,7 +241,7 @@ export default function ManualPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentPage, isManualOpen, navigateSlide, closeManual, openManual, hasInteracted, showQrModal])
+  }, [currentPage, isManualOpen, navigateSlide, closeManual, openManual, hasInteracted])
 
   const handleTimeUpdate = () => {
     if (audioRef.current && audioRef.current.duration) {
@@ -509,76 +444,12 @@ export default function ManualPage() {
               </div>
             </motion.div>
           )}
-
-          {/* QR Code Modal Popup */}
-          {showQrModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowQrModal(false)}
-              className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl"
-              >
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Sticker QR Code</h3>
-                <a
-                  href={targetUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-brand-600 font-semibold hover:underline block mb-4 break-all"
-                >
-                  {targetUrl}
-                </a>
-
-                <div className="w-full flex justify-center items-center mb-4">
-                  <div className="p-3 bg-white rounded-2xl shadow-inner border border-slate-200 w-full max-w-[260px] flex items-center justify-center mx-auto overflow-hidden">
-                    <div
-                      ref={qrRef}
-                      className="w-full aspect-square flex items-center justify-center overflow-hidden mx-auto [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:block"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <button
-                    type="button"
-                    onClick={downloadQrSvg}
-                    className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
-                  >
-                    <span>📥</span>
-                    <span>Download SVG (Lossless Print)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadQrPng}
-                    className="w-full py-3 bg-white hover:bg-brand-50 text-brand-600 font-bold rounded-xl text-sm border border-brand-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
-                  >
-                    <span>🖼️</span>
-                    <span>Download Ultra-HD PNG</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowQrModal(false)}
-                    className="w-full py-2.5 bg-transparent hover:bg-slate-100 text-slate-500 font-medium rounded-xl text-xs"
-                  >
-                    Close
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
         </AnimatePresence>
       </main>
 
-      {/* Footer Controls & Small Download QR Button on Bottom Left */}
+      {/* Footer Navigation Dots - Ultra-clean layout for accessibility */}
       <footer
-        className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 z-20 mt-6"
+        className="p-4 sm:p-6 flex items-center justify-center gap-4 z-20 mt-6"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(16px)',
@@ -586,43 +457,26 @@ export default function ManualPage() {
           borderTop: '1px solid rgba(226, 232, 240, 0.8)',
         }}
       >
-        <div className="w-full flex items-center justify-between gap-3">
-          {/* Small Download QR Button on Bottom Left */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowQrModal(true)
-              stopAudio()
-            }}
-            className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
-          >
-            <span>📱</span>
-            <span>Download QR</span>
-          </button>
-
-          {/* Dots on Right */}
-          {!isManualOpen && (
-            <div className="flex items-center gap-2">
-              {pagesData.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigateSlide(idx)
-                  }}
-                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                    currentPage === idx
-                      ? 'w-6 bg-brand-500'
-                      : 'w-2.5 bg-slate-300 hover:bg-slate-400'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {!isManualOpen && (
+          <div className="flex items-center justify-center gap-3">
+            {pagesData.map((p, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigateSlide(idx)
+                }}
+                className={`h-3 rounded-full transition-all cursor-pointer ${
+                  currentPage === idx
+                    ? 'w-8 bg-brand-500 shadow-sm'
+                    : 'w-3 bg-slate-300 hover:bg-slate-400'
+                }`}
+                aria-label={`Go to slide ${idx + 1}: ${p.langName}`}
+              />
+            ))}
+          </div>
+        )}
       </footer>
     </div>
   )
