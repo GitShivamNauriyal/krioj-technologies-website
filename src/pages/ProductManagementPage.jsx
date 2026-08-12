@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import QRCodeStyling from 'qr-code-styling'
+import JSZip from 'jszip'
 
 export default function ProductManagementPage() {
   const today = new Date()
@@ -154,39 +155,56 @@ export default function ProductManagementPage() {
     await downloadStickerSvg(r2Serial)
   }
 
-  // Batch Download all 100 sets (300 SVGs total: 100 T, 100 R1, 100 R2 for items 00 to 99) for current Lot
-  const handleBatchDownloadAll300 = async () => {
+  // Batch Download all 100 sets (300 SVGs total: 100 T, 100 R1, 100 R2 for items 00 to 99) as a SINGLE ZIP file!
+  const handleBatchDownloadAll300Zip = async () => {
     setIsExportingBatch(true)
     setBatchProgress(0)
 
+    const zip = new JSZip()
     const yy = year.padStart(2, '0').slice(-2)
     const mm = month.padStart(2, '0').slice(-2)
     const lotStr = formattedLot
 
     for (let i = 0; i <= 99; i++) {
       const devStr = String(i).padStart(2, '0')
-      
-      // Download Transmitter tag
+
+      // Add Transmitter SVG to ZIP
       const tSerial = `T-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(tSerial)
-      await new Promise((r) => setTimeout(r, 120))
+      const tSvgData = await getFullStickerSvgString(tSerial)
+      zip.file(`krioj_${tSerial}.svg`, tSvgData)
 
-      // Download Receiver 1 tag
+      // Add Receiver 1 SVG to ZIP
       const r1Serial = `R1-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(r1Serial)
-      await new Promise((r) => setTimeout(r, 120))
+      const r1SvgData = await getFullStickerSvgString(r1Serial)
+      zip.file(`krioj_${r1Serial}.svg`, r1SvgData)
 
-      // Download Receiver 2 tag
+      // Add Receiver 2 SVG to ZIP
       const r2Serial = `R2-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(r2Serial)
-      await new Promise((r) => setTimeout(r, 120))
+      const r2SvgData = await getFullStickerSvgString(r2Serial)
+      zip.file(`krioj_${r2Serial}.svg`, r2SvgData)
 
       setBatchProgress(i + 1)
     }
 
+    // Generate ZIP file in memory (only ONE download prompt!)
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    const zipUrl = URL.createObjectURL(zipBlob)
+    const link = document.createElement('a')
+    link.href = zipUrl
+    link.download = `krioj_lot_${lotStr}_all_300_tags.zip`
+    document.body.appendChild(link)
+    link.click()
+
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link)
+      }
+      URL.revokeObjectURL(zipUrl)
+    }, 10000)
+
     setIsExportingBatch(false)
 
-    // Auto-increment Lot Number (00 to 99) after downloading all 300 SVGs for that lot!
+    // Auto-increment Lot Number (00 to 99) after exporting ZIP
     setLotNo((prevLot) => (prevLot + 1) % 100)
     setDeviceNo(0)
   }
@@ -406,23 +424,23 @@ export default function ProductManagementPage() {
             </div>
           </div>
 
-          {/* Card 2: Separated Full Lot Batch Export Box */}
+          {/* Card 2: Separated Full Lot ZIP Export Box */}
           <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-40 h-40 bg-brand-500/10 rounded-full blur-2xl pointer-events-none" />
 
             <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
               <span>📦</span>
-              <span>Full Lot Batch Generator (300 SVGs)</span>
+              <span>Full Lot ZIP Archive (300 SVGs - 1 Prompt)</span>
             </h3>
             <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Export all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> (300 sticker SVGs total: 100 Transmitters, 100 Receiver 1s, and 100 Receiver 2s for items 00 to 99). Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon completion.
+              Bundles all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> into a single ZIP file (<code className="text-brand-300">krioj_lot_{formattedLot}_all_300_tags.zip</code>). Prompts for save location <strong>only ONCE</strong>! Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon download.
             </p>
 
             {/* Batch Progress Bar if Active */}
             {isExportingBatch && (
               <div className="p-4 bg-slate-800/90 border border-slate-700 rounded-2xl text-center space-y-2 mb-6 shadow-inner">
                 <div className="text-xs font-bold text-brand-300">
-                  Downloading Lot {formattedLot}: Set {batchProgress}/100 ({batchProgress * 3}/300 SVGs completed)...
+                  Zipping Lot {formattedLot}: Set {batchProgress}/100 ({batchProgress * 3}/300 SVGs bundled)...
                 </div>
                 <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
                   <div
@@ -436,14 +454,14 @@ export default function ProductManagementPage() {
             <button
               type="button"
               disabled={isExportingBatch}
-              onClick={handleBatchDownloadAll300}
+              onClick={handleBatchDownloadAll300Zip}
               className="w-full py-4 bg-brand-500 hover:bg-brand-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-2xl text-sm shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all"
             >
-              <span>⚡</span>
+              <span>📁</span>
               <span>
                 {isExportingBatch
-                  ? `Generating Lot ${formattedLot} (${batchProgress}/100 sets)...`
-                  : `Download All 100 Sets for Lot ${formattedLot} (300 SVGs)`}
+                  ? `Zipping Lot ${formattedLot} (${batchProgress}/100 sets)...`
+                  : `Download Lot ${formattedLot} ZIP Archive (300 SVGs)`}
               </span>
             </button>
           </div>
@@ -491,7 +509,7 @@ export default function ProductManagementPage() {
                 <p>✓ High-DPI Vector SVG Output</p>
                 <p>✓ Scans directly to: <span className="text-brand-600 font-semibold">{manualUrl}</span></p>
                 <p>✓ Serial: <span className="font-mono text-slate-800 font-bold">{currentSerialNo}</span> ({rawDigitCount} Digits + Hyphens)</p>
-                <p className="text-[11px] text-amber-600 font-medium">Auto-increments Lot No after 100 sets (00-99)</p>
+                <p className="text-[11px] text-amber-600 font-medium">Bundles into 1 ZIP file (00-99 sets)</p>
               </div>
 
               <button
