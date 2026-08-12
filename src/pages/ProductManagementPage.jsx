@@ -23,7 +23,7 @@ export default function ProductManagementPage() {
   const [seqIndex, setSeqIndex] = useState(0) // starts from 0 ("00")
   const [customSerialSuffix, setCustomSerialSuffix] = useState('')
   const [batchCount, setBatchCount] = useState(1)
-  const [manualUrl, setManualUrl] = useState('https://krioj.vercel.app/manual')
+  const [manualUrl, setManualUrl] = useState('https://tarang.krioj.co.in/manual')
   const [showExportModal, setShowExportModal] = useState(false)
 
   const qrRef = useRef(null)

@@ -6,7 +6,7 @@ export default function ManualQRCodeGenerator() {
   const qrRef = useRef(null)
   const qrCode = useRef(null)
 
-  const targetUrl = 'https://krioj.vercel.app/manual'
+  const targetUrl = 'https://tarang.krioj.co.in/manual'
 
   useEffect(() => {
     qrCode.current = new QRCodeStyling({

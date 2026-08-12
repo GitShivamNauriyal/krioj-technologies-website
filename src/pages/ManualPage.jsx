@@ -92,7 +92,7 @@ export default function ManualPage() {
   const touchEndX = useRef(0)
   const lastTapTime = useRef(0)
 
-  const targetUrl = 'https://krioj.vercel.app/manual'
+  const targetUrl = 'https://tarang.krioj.co.in/manual'
 
   // Stop audio helper
   const stopAudio = useCallback(() => {
