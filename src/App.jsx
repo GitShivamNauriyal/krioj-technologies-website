@@ -9,6 +9,7 @@ import TroubleshootingAccordion from './components/TroubleshootingAccordion'
 import SafetyGuide from './components/SafetyGuide'
 import Footer from './components/Footer'
 import ManualPage from './pages/ManualPage'
+import ProductManagementPage from './pages/ProductManagementPage'
 
 function ShowcasePage() {
   return (
@@ -31,6 +32,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<ShowcasePage />} />
       <Route path="/manual" element={<ManualPage />} />
+      <Route path="/product_management" element={<ProductManagementPage />} />
+      <Route path="/product-management" element={<ProductManagementPage />} />
     </Routes>
   )
 }
