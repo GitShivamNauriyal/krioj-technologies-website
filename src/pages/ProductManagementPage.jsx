@@ -75,26 +75,25 @@ export default function ProductManagementPage() {
     }
   }, [manualUrl])
 
-  // Helper to generate a standalone SVG string of the full sticker (QR + Serial No)
-  const getFullStickerSvgString = async (serialStr) => {
-    // Generate QR SVG string
-    const qrSvgRaw = await qrCodeInstance.current?.getRawData('svg')
-    let qrSvgContent = ''
-    if (qrSvgRaw) {
-      const reader = new FileReader()
-      qrSvgContent = await new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result)
-        reader.readAsText(qrSvgRaw)
-      })
+  // Get raw clean QR code vector string ONCE
+  const getCleanQrSvg = async () => {
+    if (!qrCodeInstance.current) return ''
+    try {
+      const qrSvgRaw = await qrCodeInstance.current.getRawData('svg')
+      if (!qrSvgRaw) return ''
+      const text = await qrSvgRaw.text()
+      return text
+        .replace(/<\?xml.*?\?>/gi, '')
+        .replace(/<!DOCTYPE.*?>/gi, '')
+        .trim()
+    } catch {
+      return ''
     }
+  }
 
-    const cleanQr = qrSvgContent
-      .replace(/<\?xml.*?\?>/gi, '')
-      .replace(/<!DOCTYPE.*?>/gi, '')
-      .trim()
-
-    // Pure vector SVG (starting directly with <svg> tag for browser safety)
-    const compositeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360">
+  // Helper to generate a standalone SVG string of the full sticker (QR + Serial No)
+  const getFullStickerSvgString = (serialStr, cleanQrSvg = '') => {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360">
   <rect width="300" height="360" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="4" />
   
   <!-- Branding Header -->
@@ -103,7 +102,7 @@ export default function ProductManagementPage() {
   
   <!-- Embedded QR Code Vector -->
   <g transform="translate(30, 48)">
-    ${cleanQr}
+    ${cleanQrSvg}
   </g>
   
   <!-- Divider -->
@@ -114,13 +113,12 @@ export default function ProductManagementPage() {
   <text x="150" y="323" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="1">SERIAL NO.</text>
   <text x="150" y="338" font-family="Courier New, monospace" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">${serialStr}</text>
 </svg>`
-
-    return compositeSvg
   }
 
   // Trigger single SVG Download (filename: krioj_<serial_no>.svg)
   const downloadStickerSvg = async (serialStr = currentSerialNo) => {
-    const svgData = await getFullStickerSvgString(serialStr)
+    const cleanQr = await getCleanQrSvg()
+    const svgData = getFullStickerSvgString(serialStr, cleanQr)
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -155,7 +153,7 @@ export default function ProductManagementPage() {
     await downloadStickerSvg(r2Serial)
   }
 
-  // Batch Download all 100 sets (300 SVGs total: 100 T, 100 R1, 100 R2 for items 00 to 99) as a SINGLE ZIP file!
+  // Batch Download all 100 sets (300 SVGs total: 100 T, 100 R1, 100 R2 for items 00 to 99) as a DYNAMIC SINGLE ZIP ARCHIVE!
   const handleBatchDownloadAll300Zip = async () => {
     setIsExportingBatch(true)
     setBatchProgress(0)
@@ -164,34 +162,39 @@ export default function ProductManagementPage() {
     const yy = year.padStart(2, '0').slice(-2)
     const mm = month.padStart(2, '0').slice(-2)
     const lotStr = formattedLot
+    const cleanQr = await getCleanQrSvg()
+
+    // Root folder name inside the ZIP (e.g. krioj_lot_05_2608_tags)
+    const folderName = `krioj_lot_${lotStr}_${yy}${mm}_tags`
+    const folder = zip.folder(folderName)
 
     for (let i = 0; i <= 99; i++) {
       const devStr = String(i).padStart(2, '0')
 
-      // Add Transmitter SVG to ZIP
+      // Dynamic Transmitter serial: e.g. T-26-08-05-00
       const tSerial = `T-${yy}-${mm}-${lotStr}-${devStr}`
-      const tSvgData = await getFullStickerSvgString(tSerial)
-      zip.file(`krioj_${tSerial}.svg`, tSvgData)
+      const tSvgData = getFullStickerSvgString(tSerial, cleanQr)
+      folder.file(`krioj_${tSerial}.svg`, tSvgData)
 
-      // Add Receiver 1 SVG to ZIP
+      // Dynamic Receiver 1 serial: e.g. R1-26-08-05-00
       const r1Serial = `R1-${yy}-${mm}-${lotStr}-${devStr}`
-      const r1SvgData = await getFullStickerSvgString(r1Serial)
-      zip.file(`krioj_${r1Serial}.svg`, r1SvgData)
+      const r1SvgData = getFullStickerSvgString(r1Serial, cleanQr)
+      folder.file(`krioj_${r1Serial}.svg`, r1SvgData)
 
-      // Add Receiver 2 SVG to ZIP
+      // Dynamic Receiver 2 serial: e.g. R2-26-08-05-00
       const r2Serial = `R2-${yy}-${mm}-${lotStr}-${devStr}`
-      const r2SvgData = await getFullStickerSvgString(r2Serial)
-      zip.file(`krioj_${r2Serial}.svg`, r2SvgData)
+      const r2SvgData = getFullStickerSvgString(r2Serial, cleanQr)
+      folder.file(`krioj_${r2Serial}.svg`, r2SvgData)
 
       setBatchProgress(i + 1)
     }
 
-    // Generate ZIP file in memory (only ONE download prompt!)
+    // Generate ZIP archive file in memory
     const zipBlob = await zip.generateAsync({ type: 'blob' })
     const zipUrl = URL.createObjectURL(zipBlob)
     const link = document.createElement('a')
     link.href = zipUrl
-    link.download = `krioj_lot_${lotStr}_all_300_tags.zip`
+    link.download = `krioj_lot_${lotStr}_${yy}${mm}_300_tags.zip`
     document.body.appendChild(link)
     link.click()
 
@@ -433,7 +436,7 @@ export default function ProductManagementPage() {
               <span>Full Lot ZIP Archive (300 SVGs - 1 Prompt)</span>
             </h3>
             <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Bundles all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> into a single ZIP file (<code className="text-brand-300">krioj_lot_{formattedLot}_all_300_tags.zip</code>). Prompts for save location <strong>only ONCE</strong>! Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon download.
+              Bundles all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> into a dynamic ZIP archive (<code className="text-brand-300">krioj_lot_{formattedLot}_{year.padStart(2, '0').slice(-2)}{month.padStart(2, '0').slice(-2)}_300_tags.zip</code> containing folder <code className="text-brand-300">krioj_lot_{formattedLot}_{year.padStart(2, '0').slice(-2)}{month.padStart(2, '0').slice(-2)}_tags/</code>). Prompts for save location <strong>only ONCE</strong>! Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon completion.
             </p>
 
             {/* Batch Progress Bar if Active */}
