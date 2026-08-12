@@ -99,7 +99,7 @@ export default function ManualPage() {
     setAudioProgress(0)
   }, [])
 
-  // Play audio helper - with robust promise error handling for mobile Safari/Chrome
+  // Play audio helper - with promise error handling
   const playAudio = useCallback((src) => {
     stopAudio()
     if (!audioRef.current) return
@@ -116,21 +116,23 @@ export default function ManualPage() {
     }
   }, [stopAudio])
 
-  // Play current slide audio (or manual audio if manual is open)
-  const speakCurrentSlide = useCallback(() => {
-    if (isManualOpen) {
-      const page = pagesData[currentPage]
-      if (page && page.manualAudio) {
-        playAudio(page.manualAudio)
-      }
-      return
-    }
-    const page = pagesData[currentPage]
+  // Play slide language intro audio (e.g. Eng_1st.mp3, Hindi_1st.mp3, shubh_Welcome.mp3)
+  const speakSlideIntro = useCallback((index = currentPage) => {
+    const page = pagesData[index]
+    if (!page) return
     const src = page.audio || page.introAudio
     if (src) {
       playAudio(src)
     }
-  }, [currentPage, isManualOpen, playAudio])
+  }, [currentPage, playAudio])
+
+  // Play full manual detail audio (e.g. Eng_2nd.mp3, Hindi_2nd.mp3)
+  const speakManualAudio = useCallback((index = currentPage) => {
+    const page = pagesData[index]
+    if (page && page.manualAudio) {
+      playAudio(page.manualAudio)
+    }
+  }, [currentPage, playAudio])
 
   // Open manual view for current language
   const openManual = useCallback(() => {
@@ -138,18 +140,16 @@ export default function ManualPage() {
     const page = pagesData[currentPage]
     if (page.manualAudio) {
       setIsManualOpen(true)
-      playAudio(page.manualAudio)
+      speakManualAudio(currentPage)
     }
-  }, [currentPage, playAudio])
+  }, [currentPage, speakManualAudio])
 
-  // Close manual view
+  // Close manual view and return to slide intro audio
   const closeManual = useCallback(() => {
     setIsManualOpen(false)
     stopAudio()
-    setTimeout(() => {
-      speakCurrentSlide()
-    }, 100)
-  }, [speakCurrentSlide, stopAudio])
+    speakSlideIntro(currentPage)
+  }, [currentPage, speakSlideIntro, stopAudio])
 
   // Handle slide change
   const navigateSlide = useCallback((newIndex) => {
@@ -160,12 +160,12 @@ export default function ManualPage() {
     setCurrentPage(target)
   }, [isManualOpen])
 
-  // Auto-play when slide changes AFTER initial user interaction
+  // Play slide intro when slide changes AFTER initial user interaction
   useEffect(() => {
     if (!isManualOpen && hasInteracted) {
-      speakCurrentSlide()
+      speakSlideIntro(currentPage)
     }
-  }, [currentPage, isManualOpen, speakCurrentSlide])
+  }, [currentPage, isManualOpen, hasInteracted, speakSlideIntro])
 
   // Debounced Double Action (double tap / double click anywhere on screen)
   const handleDoubleAction = useCallback(() => {
@@ -188,9 +188,13 @@ export default function ManualPage() {
   const handleUserInteraction = () => {
     if (!hasInteracted) {
       setHasInteracted(true)
-      speakCurrentSlide()
+      speakSlideIntro(currentPage)
     } else if (!isPlaying) {
-      speakCurrentSlide()
+      if (isManualOpen) {
+        speakManualAudio(currentPage)
+      } else {
+        speakSlideIntro(currentPage)
+      }
     }
   }
 
