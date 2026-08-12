@@ -24,9 +24,12 @@ export default function ProductManagementPage() {
   const formattedDevice = String(Math.min(99, Math.max(0, deviceNo))).padStart(2, '0').slice(-2)
 
   // Serial Number Format with hyphens between all segments:
-  // Transmitter (T): T-26-08-00-00 (DeviceType - YY - MM - Lot - Device)
-  // Receivers (R1 / R2): R1-26-08-00-00 / R2-26-08-00-00
+  // Transmitter (T): T-26-08-00-00 (9 alphanumeric chars: T + 8 digits)
+  // Receivers (R1 / R2): R1-26-08-00-00 / R2-26-08-00-00 (10 alphanumeric chars: R1/R2 + 8 digits)
   const currentSerialNo = `${deviceType}-${year.padStart(2, '0').slice(-2)}-${month.padStart(2, '0').slice(-2)}-${formattedLot}-${formattedDevice}`
+
+  // Alphanumeric digit count without hyphens (9 for T, 10 for R1/R2)
+  const rawDigitCount = deviceType === 'T' ? 9 : 10
 
   // Initialize live QR code instance
   useEffect(() => {
@@ -114,7 +117,7 @@ export default function ProductManagementPage() {
     return compositeSvg
   }
 
-  // Trigger SVG Download (filename: krioj_<serial_no>.svg)
+  // Trigger single SVG Download (filename: krioj_<serial_no>.svg)
   const downloadStickerSvg = async (serialStr = currentSerialNo) => {
     const svgData = await getFullStickerSvgString(serialStr)
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
@@ -132,8 +135,27 @@ export default function ProductManagementPage() {
     }, 10000)
   }
 
-  // Batch Download all 100 SVGs for current Lot (devices 00 to 99 for selected device type)
-  const handleBatchDownloadAll100 = async () => {
+  // Download complete 3-sticker set (T, R1, R2) for currently selected device number
+  const downloadSingleSet = async () => {
+    const yy = year.padStart(2, '0').slice(-2)
+    const mm = month.padStart(2, '0').slice(-2)
+    const lotStr = formattedLot
+    const devStr = formattedDevice
+
+    const tSerial = `T-${yy}-${mm}-${lotStr}-${devStr}`
+    await downloadStickerSvg(tSerial)
+    await new Promise((r) => setTimeout(r, 150))
+
+    const r1Serial = `R1-${yy}-${mm}-${lotStr}-${devStr}`
+    await downloadStickerSvg(r1Serial)
+    await new Promise((r) => setTimeout(r, 150))
+
+    const r2Serial = `R2-${yy}-${mm}-${lotStr}-${devStr}`
+    await downloadStickerSvg(r2Serial)
+  }
+
+  // Batch Download all 100 sets (300 SVGs total: 100 T, 100 R1, 100 R2 for items 00 to 99) for current Lot
+  const handleBatchDownloadAll300 = async () => {
     setIsExportingBatch(true)
     setBatchProgress(0)
 
@@ -143,15 +165,28 @@ export default function ProductManagementPage() {
 
     for (let i = 0; i <= 99; i++) {
       const devStr = String(i).padStart(2, '0')
-      const serialStr = `${deviceType}-${yy}-${mm}-${lotStr}-${devStr}`
-      await downloadStickerSvg(serialStr)
+      
+      // Download Transmitter tag
+      const tSerial = `T-${yy}-${mm}-${lotStr}-${devStr}`
+      await downloadStickerSvg(tSerial)
       await new Promise((r) => setTimeout(r, 120))
+
+      // Download Receiver 1 tag
+      const r1Serial = `R1-${yy}-${mm}-${lotStr}-${devStr}`
+      await downloadStickerSvg(r1Serial)
+      await new Promise((r) => setTimeout(r, 120))
+
+      // Download Receiver 2 tag
+      const r2Serial = `R2-${yy}-${mm}-${lotStr}-${devStr}`
+      await downloadStickerSvg(r2Serial)
+      await new Promise((r) => setTimeout(r, 120))
+
       setBatchProgress(i + 1)
     }
 
     setIsExportingBatch(false)
 
-    // Auto-increment Lot Number (00 to 99) after downloading all 100 SVGs for that lot!
+    // Auto-increment Lot Number (00 to 99) after downloading all 300 SVGs for that lot!
     setLotNo((prevLot) => (prevLot + 1) % 100)
     setDeviceNo(0)
   }
@@ -187,22 +222,23 @@ export default function ProductManagementPage() {
 
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto w-full p-4 sm:p-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Controls */}
+        {/* Left Column: Controls & Generators */}
         <div className="lg:col-span-7 space-y-6">
+          {/* Card 1: Single Item Generator */}
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
             <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
               <span>🏷️</span>
-              <span>Serial Tag Generator (Base 10)</span>
+              <span>Single Product Tag Generator</span>
             </h2>
             <p className="text-xs text-slate-500 mb-6">
-              Transmitter (T): 9 characters (T + YY + MM + Lot + Device). Receivers (R1/R2): 10 characters. Lot and Device numbers range strictly from 00 to 99.
+              Each product package ships with 1 Transmitter (T), 1 Receiver (R1), and 1 Receiver (R2). Lot and Device numbers range from 00 to 99.
             </p>
 
             <div className="space-y-5">
               {/* Device Type Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Device Type (Single Tag Preview)
+                  Device Type (Preview Tag)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -304,7 +340,7 @@ export default function ProductManagementPage() {
               {/* Device Number Sequence (00 - 99) */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Device Number (00 - 99)
+                  Device Item Number (00 - 99)
                 </label>
                 <div className="flex items-center gap-3">
                   <button
@@ -343,51 +379,73 @@ export default function ProductManagementPage() {
                   </span>
                 </div>
                 <span className="text-xs bg-brand-500/30 text-brand-300 border border-brand-400/40 px-3 py-1 rounded-lg font-mono uppercase">
-                  {currentSerialNo.length} DIGITS ({deviceType})
+                  {rawDigitCount} DIGITS ({deviceType})
                 </span>
               </div>
 
-              {/* Batch Export Progress Info if Active */}
-              {isExportingBatch && (
-                <div className="p-4 bg-brand-50 border border-brand-200 rounded-2xl text-center space-y-2">
-                  <div className="text-xs font-bold text-brand-700">
-                    Downloading All 100 SVGs for Lot {formattedLot} ({batchProgress}/100 tags)...
-                  </div>
-                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-brand-500 h-full transition-all duration-150"
-                      style={{ width: `${(batchProgress / 100) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="pt-2 grid grid-cols-1 gap-3">
+              {/* Action Buttons for Single Item Downloads */}
+              <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => downloadStickerSvg(currentSerialNo)}
-                  className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-xs shadow-elevated flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
                   <span>📥</span>
-                  <span>Download Single Tag (krioj_{currentSerialNo}.svg)</span>
+                  <span>Download {deviceType} Tag Only</span>
                 </button>
 
                 <button
                   type="button"
-                  disabled={isExportingBatch}
-                  onClick={handleBatchDownloadAll100}
-                  className="w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-xl text-sm shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  onClick={downloadSingleSet}
+                  className="w-full py-3.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
-                  <span>📦</span>
-                  <span>
-                    {isExportingBatch
-                      ? `Exporting Lot ${formattedLot} (${batchProgress}/100 tags)...`
-                      : `Download All 100 SVGs for Lot ${formattedLot} (${deviceType})`}
-                  </span>
+                  <span>✨</span>
+                  <span>Download Full Set (3 SVGs: T, R1, R2)</span>
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Card 2: Separated Full Lot Batch Export Box */}
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-40 h-40 bg-brand-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+              <span>📦</span>
+              <span>Full Lot Batch Generator (300 SVGs)</span>
+            </h3>
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+              Export all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> (300 sticker SVGs total: 100 Transmitters, 100 Receiver 1s, and 100 Receiver 2s for items 00 to 99). Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon completion.
+            </p>
+
+            {/* Batch Progress Bar if Active */}
+            {isExportingBatch && (
+              <div className="p-4 bg-slate-800/90 border border-slate-700 rounded-2xl text-center space-y-2 mb-6 shadow-inner">
+                <div className="text-xs font-bold text-brand-300">
+                  Downloading Lot {formattedLot}: Set {batchProgress}/100 ({batchProgress * 3}/300 SVGs completed)...
+                </div>
+                <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                  <div
+                    className="bg-brand-500 h-full transition-all duration-150"
+                    style={{ width: `${(batchProgress / 100) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              disabled={isExportingBatch}
+              onClick={handleBatchDownloadAll300}
+              className="w-full py-4 bg-brand-500 hover:bg-brand-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-2xl text-sm shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <span>⚡</span>
+              <span>
+                {isExportingBatch
+                  ? `Generating Lot ${formattedLot} (${batchProgress}/100 sets)...`
+                  : `Download All 100 Sets for Lot ${formattedLot} (300 SVGs)`}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -432,7 +490,7 @@ export default function ProductManagementPage() {
               <div className="mt-6 text-xs text-slate-500 space-y-1">
                 <p>✓ High-DPI Vector SVG Output</p>
                 <p>✓ Scans directly to: <span className="text-brand-600 font-semibold">{manualUrl}</span></p>
-                <p>✓ Serial: <span className="font-mono text-slate-800 font-bold">{currentSerialNo}</span> ({currentSerialNo.length} digits)</p>
+                <p>✓ Serial: <span className="font-mono text-slate-800 font-bold">{currentSerialNo}</span> ({rawDigitCount} Digits + Hyphens)</p>
                 <p className="text-[11px] text-amber-600 font-medium">Auto-increments Lot No after 100 sets (00-99)</p>
               </div>
 
