@@ -116,14 +116,21 @@ export default function ManualPage() {
     }
   }, [stopAudio])
 
-  // Play current slide audio
+  // Play current slide audio (or manual audio if manual is open)
   const speakCurrentSlide = useCallback(() => {
+    if (isManualOpen) {
+      const page = pagesData[currentPage]
+      if (page && page.manualAudio) {
+        playAudio(page.manualAudio)
+      }
+      return
+    }
     const page = pagesData[currentPage]
     const src = page.audio || page.introAudio
     if (src) {
       playAudio(src)
     }
-  }, [currentPage, playAudio])
+  }, [currentPage, isManualOpen, playAudio])
 
   // Open manual view for current language
   const openManual = useCallback(() => {
@@ -160,7 +167,7 @@ export default function ManualPage() {
     }
   }, [currentPage, isManualOpen, speakCurrentSlide])
 
-  // Debounced Double Action (handles both touch double-tap and mouse double-click without double execution)
+  // Debounced Double Action (double tap / double click anywhere on screen)
   const handleDoubleAction = useCallback(() => {
     const now = Date.now()
     if (now - lastDoubleActionTimeRef.current < 450) {
@@ -177,12 +184,12 @@ export default function ManualPage() {
     }
   }, [isManualOpen, closeManual, currentPage, openManual])
 
-  // Single user tap/click handler for unlocking audio on mobile
+  // Single user tap/click handler on whole screen
   const handleUserInteraction = () => {
     if (!hasInteracted) {
       setHasInteracted(true)
       speakCurrentSlide()
-    } else if (currentPage === 0 && !isPlaying && !isManualOpen) {
+    } else if (!isPlaying) {
       speakCurrentSlide()
     }
   }
@@ -212,7 +219,7 @@ export default function ManualPage() {
     }
     lastTapTime.current = currentTime
 
-    // Swipe left / right navigation
+    // Swipe left / right navigation (only when manual is not open)
     if (Math.abs(distance) > 40 && !isManualOpen) {
       if (distance < 0) {
         navigateSlide(currentPage + 1)
@@ -258,7 +265,7 @@ export default function ManualPage() {
 
   return (
     <div
-      className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto overflow-x-hidden w-full max-w-full box-border relative pb-12"
+      className="min-h-[105vh] bg-slate-50 text-slate-900 flex flex-col justify-between select-none overflow-y-auto overflow-x-hidden w-full max-w-full box-border relative pb-12 cursor-pointer"
       onPointerDown={handlePointerDown}
       onClick={handleUserInteraction}
       onDoubleClick={handleDoubleClick}
@@ -324,8 +331,7 @@ export default function ManualPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.3 }}
-              onClick={handleUserInteraction}
-              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-6 sm:p-12 text-center shadow-xl backdrop-blur-xl relative cursor-pointer"
+              className="w-full max-w-xl bg-white/90 border border-slate-200/80 rounded-3xl p-6 sm:p-12 text-center shadow-xl backdrop-blur-xl relative"
             >
               {currentPage === 0 ? (
                 <div>
@@ -338,18 +344,6 @@ export default function ManualPage() {
                   <p className="text-base sm:text-2xl text-slate-600 whitespace-pre-line leading-relaxed font-medium">
                     {page.instruction}
                   </p>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleUserInteraction()
-                    }}
-                    className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-bold rounded-2xl text-sm shadow-md transition-all cursor-pointer"
-                  >
-                    <span>🔊</span>
-                    <span>{isPlaying ? 'Playing Welcome Audio...' : 'Tap to Listen Welcome Audio'}</span>
-                  </button>
                 </div>
               ) : (
                 <div>
@@ -359,22 +353,11 @@ export default function ManualPage() {
                   <h1 className="text-4xl sm:text-7xl font-black text-slate-900 mb-6 sm:mb-8">
                     {page.title}
                   </h1>
-                  <div className="p-4 sm:p-6 bg-brand-50/80 rounded-2xl border border-brand-200/70 mb-6 sm:mb-8 shadow-inner">
+                  <div className="p-4 sm:p-6 bg-brand-50/80 rounded-2xl border border-brand-200/70 mb-2 sm:mb-4 shadow-inner">
                     <p className="text-base sm:text-2xl text-brand-900 whitespace-pre-line font-semibold leading-relaxed">
                       {page.instruction}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openManual()
-                    }}
-                    className="w-full py-3.5 sm:py-4 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>🔊</span>
-                    <span>Listen Manual ({page.title})</span>
-                  </button>
                 </div>
               )}
 
@@ -385,7 +368,7 @@ export default function ManualPage() {
               )}
             </motion.div>
           ) : (
-            /* MANUAL DETAIL VIEW */
+            /* MANUAL DETAIL VIEW - Distraction-free for visually impaired users */
             <motion.div
               key="manual-view"
               initial={{ opacity: 0, y: 30 }}
@@ -399,55 +382,29 @@ export default function ManualPage() {
                   {page.manualTitle}
                 </h1>
 
-                <div className="text-slate-800 text-sm sm:text-xl font-medium leading-relaxed whitespace-pre-line overflow-y-auto max-h-[35vh] sm:max-h-[40vh] pr-2 scrollbar-thin">
+                <div className="text-slate-800 text-sm sm:text-xl font-medium leading-relaxed whitespace-pre-line overflow-y-auto max-h-[40vh] sm:max-h-[45vh] pr-2 scrollbar-thin">
                   {page.manualText}
                 </div>
               </div>
 
-              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-200 flex flex-col gap-3 sm:gap-4">
-                <div className="w-full bg-slate-200 h-2 sm:h-2.5 rounded-full overflow-hidden">
+              {/* Progress bar only - Double tap anywhere on screen to exit */}
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-200 flex flex-col gap-2">
+                <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                   <div
                     className="bg-brand-500 h-full transition-all duration-100"
                     style={{ width: `${audioProgress}%` }}
                   />
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (isPlaying) {
-                        stopAudio()
-                      } else {
-                        speakCurrentSlide()
-                      }
-                    }}
-                    className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs sm:text-sm border border-slate-300 flex items-center justify-center gap-2 cursor-pointer transition-all"
-                  >
-                    <span>{isPlaying ? '⏸️' : '▶️'}</span>
-                    <span>{isPlaying ? 'Pause' : 'Replay'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      closeManual()
-                    }}
-                    className="py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
-                  >
-                    <span>←</span>
-                    <span>Back (or Double Tap)</span>
-                  </button>
-                </div>
+                <span className="text-[11px] sm:text-xs text-slate-400 text-center font-medium">
+                  Double tap anywhere on screen to exit manual
+                </span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Footer Navigation Dots - Ultra-clean layout for accessibility */}
+      {/* Footer Navigation Dots - Ultra-clean layout */}
       <footer
         className="p-4 sm:p-6 flex items-center justify-center gap-4 z-20 mt-6"
         style={{
