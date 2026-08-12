@@ -124,22 +124,29 @@ export default function ProductManagementPage() {
     return compositeSvg
   }
 
-  // Trigger SVG Download (using Data URI & clean serial number filename for 100% Chrome/Brave support)
+  // Trigger SVG Download (Blob URL with delayed revocation for Chrome/Brave Save As file prompt)
   const downloadStickerSvg = async (serialStr = currentSerialNo) => {
     const svgData = await getFullStickerSvgString(serialStr)
-    const encodedData = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = encodedData
+    link.href = url
     link.download = `${serialStr}.svg`
     document.body.appendChild(link)
     link.click()
-    document.body.removeChild(link)
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link)
+      }
+      URL.revokeObjectURL(url)
+    }, 10000)
   }
 
   // Trigger High-Res PNG Download
   const downloadStickerPng = async (serialStr = currentSerialNo) => {
     const svgData = await getFullStickerSvgString(serialStr)
-    const encodedData = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
     const img = new Image()
 
     img.onload = () => {
@@ -149,15 +156,24 @@ export default function ProductManagementPage() {
       const ctx = canvas.getContext('2d')
       ctx.drawImage(img, 0, 0, 1200, 1440)
 
-      const pngUrl = canvas.toDataURL('image/png')
-      const link = document.createElement('a')
-      link.href = pngUrl
-      link.download = `${serialStr}.png`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      canvas.toBlob((pngBlob) => {
+        if (!pngBlob) return
+        const pngUrl = URL.createObjectURL(pngBlob)
+        const link = document.createElement('a')
+        link.href = pngUrl
+        link.download = `${serialStr}.png`
+        document.body.appendChild(link)
+        link.click()
+        setTimeout(() => {
+          if (document.body.contains(link)) {
+            document.body.removeChild(link)
+          }
+          URL.revokeObjectURL(pngUrl)
+          URL.revokeObjectURL(url)
+        }, 10000)
+      }, 'image/png')
     }
-    img.src = encodedData
+    img.src = url
   }
 
   // Generate Batch SVGs (Download sequence)
