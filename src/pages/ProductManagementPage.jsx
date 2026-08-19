@@ -36,8 +36,8 @@ export default function ProductManagementPage() {
   useEffect(() => {
     if (qrRef.current) {
       qrCodeInstance.current = new QRCodeStyling({
-        width: 220,
-        height: 220,
+        width: 240,
+        height: 240,
         type: 'svg',
         data: manualUrl,
         image: '/logo-icon.svg',
@@ -106,7 +106,7 @@ export default function ProductManagementPage() {
   </g>
   
   <!-- Divider -->
-  <line x1="30" y1="295" x2="270" y2="295" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 2" />
+  <line x1="25" y1="295" x2="275" y2="295" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 2" />
 
   <!-- Serial Number Box -->
   <rect x="25" y="306" width="250" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
