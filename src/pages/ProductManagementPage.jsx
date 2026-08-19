@@ -113,8 +113,9 @@ export default function ProductManagementPage() {
   <text x="150" y="322" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="1">SERIAL NO.</text>
   <text x="150" y="339" font-family="Courier New, monospace" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">${serialStr}</text>
 
-  <!-- Help & Support -->
-  <text x="150" y="368" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="0.5">help &amp; support tarangsupport@krioj.co.in</text>
+  <!-- Help & Support Footer -->
+  <text x="150" y="362" font-family="Arial, sans-serif" font-size="8" font-weight="800" fill="#94a3b8" text-anchor="middle" letter-spacing="1.5">HELP &amp; SUPPORT</text>
+  <text x="150" y="375" font-family="Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle" letter-spacing="0.5">tarangsupport@krioj.co.in</text>
 </svg>`
   }
 
@@ -510,8 +511,13 @@ export default function ProductManagementPage() {
                 </div>
 
                 {/* Help & Support Line */}
-                <div className="mt-2 text-[9px] font-bold text-slate-500 tracking-wide text-center">
-                  help &amp; support tarangsupport@krioj.co.in
+                <div className="mt-2.5 flex flex-col items-center">
+                  <span className="text-[7.5px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-0.5">
+                    HELP &amp; SUPPORT
+                  </span>
+                  <span className="text-[9.5px] font-bold text-brand-600 tracking-wide">
+                    tarangsupport@krioj.co.in
+                  </span>
                 </div>
               </div>
 
