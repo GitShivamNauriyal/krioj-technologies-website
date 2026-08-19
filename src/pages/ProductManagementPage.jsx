@@ -10,8 +10,8 @@ export default function ProductManagementPage() {
 
   const [year, setYear] = useState(defaultYear)
   const [month, setMonth] = useState(defaultMonth)
-  const [lotNo, setLotNo] = useState(0) // Lot Number (00 to 99)
-  const [deviceNo, setDeviceNo] = useState(0) // Device Number (00 to 99)
+  const [lotNo, setLotNo] = useState(0) // Lot Number (0 to 99)
+  const [deviceNo, setDeviceNo] = useState(0) // Device Number (0 to 99)
   const [deviceType, setDeviceType] = useState('T') // "T", "R1", or "R2"
   const [manualUrl, setManualUrl] = useState('https://tarang.krioj.co.in/manual')
   const [isExportingBatch, setIsExportingBatch] = useState(false)
@@ -20,17 +20,114 @@ export default function ProductManagementPage() {
   const qrRef = useRef(null)
   const qrCodeInstance = useRef(null)
 
-  // Strictly 2-digit format for Lot (00 - 99) and Device (00 - 99)
-  const formattedLot = String(Math.min(99, Math.max(0, lotNo))).padStart(2, '0').slice(-2)
-  const formattedDevice = String(Math.min(99, Math.max(0, deviceNo))).padStart(2, '0').slice(-2)
+  // Safe sanitized strings for display and exports (always valid 00-99 and 01-12)
+  const safeYear = (year !== '' ? String(year) : defaultYear).padStart(2, '0').slice(-2)
+  const safeMonthNum = Math.min(12, Math.max(1, parseInt(month !== '' ? month : defaultMonth, 10) || 1))
+  const safeMonth = String(safeMonthNum).padStart(2, '0')
+  const safeLotNum = Math.min(99, Math.max(0, parseInt(lotNo !== '' ? lotNo : 0, 10) || 0))
+  const formattedLot = String(safeLotNum).padStart(2, '0')
+  const safeDeviceNum = Math.min(99, Math.max(0, parseInt(deviceNo !== '' ? deviceNo : 0, 10) || 0))
+  const formattedDevice = String(safeDeviceNum).padStart(2, '0')
 
   // Serial Number Format with hyphens between all segments:
   // Transmitter (T): T-26-08-00-00 (9 alphanumeric chars: T + 8 digits)
   // Receivers (R1 / R2): R1-26-08-00-00 / R2-26-08-00-00 (10 alphanumeric chars: R1/R2 + 8 digits)
-  const currentSerialNo = `${deviceType}-${year.padStart(2, '0').slice(-2)}-${month.padStart(2, '0').slice(-2)}-${formattedLot}-${formattedDevice}`
+  const currentSerialNo = `${deviceType}-${safeYear}-${safeMonth}-${formattedLot}-${formattedDevice}`
 
   // Alphanumeric digit count without hyphens (9 for T, 10 for R1/R2)
   const rawDigitCount = deviceType === 'T' ? 9 : 10
+
+  // Strictly digit-only input handlers with range enforcement
+  const handleYearChange = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 2)
+    setYear(digits)
+  }
+
+  const handleYearBlur = () => {
+    if (year === '') {
+      setYear(defaultYear)
+    } else {
+      setYear(year.padStart(2, '0'))
+    }
+  }
+
+  const handleMonthChange = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 2)
+    if (digits.length === 2) {
+      const num = parseInt(digits, 10)
+      if (num > 12) {
+        setMonth('12')
+      } else if (num < 1) {
+        setMonth('01')
+      } else {
+        setMonth(digits)
+      }
+    } else {
+      setMonth(digits)
+    }
+  }
+
+  const handleMonthBlur = () => {
+    if (month === '' || parseInt(month, 10) === 0) {
+      setMonth('01')
+    } else {
+      const num = Math.min(12, Math.max(1, parseInt(month, 10)))
+      setMonth(String(num).padStart(2, '0'))
+    }
+  }
+
+  const handleLotChange = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 2)
+    if (digits === '') {
+      setLotNo('')
+      return
+    }
+    const num = Math.min(99, Math.max(0, parseInt(digits, 10)))
+    setLotNo(num)
+  }
+
+  const handleLotBlur = () => {
+    if (lotNo === '') {
+      setLotNo(0)
+    }
+  }
+
+  const handleDeviceChange = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 2)
+    if (digits === '') {
+      setDeviceNo('')
+      return
+    }
+    const num = Math.min(99, Math.max(0, parseInt(digits, 10)))
+    setDeviceNo(num)
+  }
+
+  const handleDeviceBlur = () => {
+    if (deviceNo === '') {
+      setDeviceNo(0)
+    }
+  }
+
+  // Handle keyboard Up/Down arrows for Lot & Device inputs
+  const handleLotKeyDown = (e) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setLotNo((prev) => Math.min(99, (parseInt(prev, 10) || 0) + 1))
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setLotNo((prev) => Math.max(0, (parseInt(prev, 10) || 0) - 1))
+    }
+  }
+
+  const handleDeviceKeyDown = (e) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setDeviceNo((prev) => Math.min(99, (parseInt(prev, 10) || 0) + 1))
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setDeviceNo((prev) => Math.max(0, (parseInt(prev, 10) || 0) - 1))
+    }
+  }
 
   // Initialize live QR code instance
   useEffect(() => {
@@ -140,8 +237,8 @@ export default function ProductManagementPage() {
 
   // Download complete 3-sticker set (T, R1, R2) for currently selected device number
   const downloadSingleSet = async () => {
-    const yy = year.padStart(2, '0').slice(-2)
-    const mm = month.padStart(2, '0').slice(-2)
+    const yy = safeYear
+    const mm = safeMonth
     const lotStr = formattedLot
     const devStr = formattedDevice
 
@@ -163,8 +260,8 @@ export default function ProductManagementPage() {
     setBatchProgress(0)
 
     const zip = new JSZip()
-    const yy = year.padStart(2, '0').slice(-2)
-    const mm = month.padStart(2, '0').slice(-2)
+    const yy = safeYear
+    const mm = safeMonth
     const lotStr = formattedLot
     const cleanQr = await getCleanQrSvg()
 
@@ -309,12 +406,15 @@ export default function ProductManagementPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className="text-[11px] text-slate-400 block mb-1">Year (2 digits)</span>
+                    <span className="text-[11px] text-slate-400 block mb-1">Year (2 digits: 00-99)</span>
                     <input
                       type="text"
+                      inputMode="numeric"
                       maxLength="2"
                       value={year}
-                      onChange={(e) => setYear(e.target.value)}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                      onBlur={handleYearBlur}
+                      onWheel={(e) => e.target.blur()}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-center font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
@@ -322,9 +422,12 @@ export default function ProductManagementPage() {
                     <span className="text-[11px] text-slate-400 block mb-1">Month (01-12)</span>
                     <input
                       type="text"
+                      inputMode="numeric"
                       maxLength="2"
                       value={month}
-                      onChange={(e) => setMonth(e.target.value)}
+                      onChange={(e) => handleMonthChange(e.target.value)}
+                      onBlur={handleMonthBlur}
+                      onWheel={(e) => e.target.blur()}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-center font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
@@ -339,22 +442,25 @@ export default function ProductManagementPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setLotNo((prev) => Math.max(0, prev - 1))}
+                    onClick={() => setLotNo((prev) => Math.max(0, (parseInt(prev, 10) || 0) - 1))}
                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border border-slate-300 cursor-pointer"
                   >
                     -
                   </button>
                   <input
-                    type="number"
-                    min="0"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength="2"
                     value={lotNo}
-                    onChange={(e) => setLotNo(Math.min(99, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="flex-1 text-center bg-brand-50 border border-brand-200 rounded-xl py-2 font-black text-lg text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    onChange={(e) => handleLotChange(e.target.value)}
+                    onBlur={handleLotBlur}
+                    onKeyDown={handleLotKeyDown}
+                    onWheel={(e) => e.target.blur()}
+                    className="flex-1 text-center bg-brand-50 border border-brand-200 rounded-xl py-2 font-bold text-lg text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <button
                     type="button"
-                    onClick={() => setLotNo((prev) => Math.min(99, prev + 1))}
+                    onClick={() => setLotNo((prev) => Math.min(99, (parseInt(prev, 10) || 0) + 1))}
                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border border-slate-300 cursor-pointer"
                   >
                     +
@@ -370,22 +476,25 @@ export default function ProductManagementPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setDeviceNo((prev) => Math.max(0, prev - 1))}
+                    onClick={() => setDeviceNo((prev) => Math.max(0, (parseInt(prev, 10) || 0) - 1))}
                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border border-slate-300 cursor-pointer"
                   >
                     -
                   </button>
                   <input
-                    type="number"
-                    min="0"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength="2"
                     value={deviceNo}
-                    onChange={(e) => setDeviceNo(Math.min(99, Math.max(0, parseInt(e.target.value) || 0)))}
+                    onChange={(e) => handleDeviceChange(e.target.value)}
+                    onBlur={handleDeviceBlur}
+                    onKeyDown={handleDeviceKeyDown}
+                    onWheel={(e) => e.target.blur()}
                     className="flex-1 text-center bg-slate-50 border border-slate-300 rounded-xl py-2 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <button
                     type="button"
-                    onClick={() => setDeviceNo((prev) => Math.min(99, prev + 1))}
+                    onClick={() => setDeviceNo((prev) => Math.min(99, (parseInt(prev, 10) || 0) + 1))}
                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border border-slate-300 cursor-pointer"
                   >
                     +
@@ -399,7 +508,7 @@ export default function ProductManagementPage() {
                   <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase block">
                     Selected Item Serial Number
                   </span>
-                  <span className="text-xl sm:text-2xl font-black font-mono tracking-widest text-brand-300">
+                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-widest text-brand-300">
                     {currentSerialNo}
                   </span>
                 </div>
@@ -440,7 +549,7 @@ export default function ProductManagementPage() {
               <span>Full Lot ZIP Archive (300 SVGs - 1 Prompt)</span>
             </h3>
             <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Bundles all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> into a dynamic ZIP archive (<code className="text-brand-300">krioj_lot_{formattedLot}_{year.padStart(2, '0').slice(-2)}{month.padStart(2, '0').slice(-2)}_300_tags.zip</code> containing folder <code className="text-brand-300">krioj_lot_{formattedLot}_{year.padStart(2, '0').slice(-2)}{month.padStart(2, '0').slice(-2)}_tags/</code>). Prompts for save location <strong>only ONCE</strong>! Auto-increments Lot No to {String((parseInt(formattedLot) + 1) % 100).padStart(2, '0')} upon completion.
+              Bundles all 100 shipped product sets for <strong className="text-brand-300">Lot {formattedLot}</strong> into a dynamic ZIP archive (<code className="text-brand-300">krioj_lot_{formattedLot}_{safeYear}{safeMonth}_300_tags.zip</code> containing folder <code className="text-brand-300">krioj_lot_{formattedLot}_{safeYear}{safeMonth}_tags/</code>). Prompts for save location <strong>only ONCE</strong>! Auto-increments Lot No to {String((safeLotNum + 1) % 100).padStart(2, '0')} upon completion.
             </p>
 
             {/* Batch Progress Bar if Active */}
