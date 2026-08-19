@@ -110,12 +110,12 @@ export default function ProductManagementPage() {
 
   <!-- Serial Number Box -->
   <rect x="25" y="306" width="250" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
-  <text x="150" y="322" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="1">SERIAL NO.</text>
-  <text x="150" y="339" font-family="Courier New, monospace" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">${serialStr}</text>
+  <text x="150" y="322" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-size="9" font-weight="800" fill="#64748b" text-anchor="middle" letter-spacing="1.5">SERIAL NO.</text>
+  <text x="150" y="339" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2.5">${serialStr}</text>
 
   <!-- Help & Support Footer -->
-  <text x="150" y="362" font-family="Arial, sans-serif" font-size="8" font-weight="800" fill="#94a3b8" text-anchor="middle" letter-spacing="1.5">HELP &amp; SUPPORT</text>
-  <text x="150" y="375" font-family="Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle" letter-spacing="0.5">tarangsupport@krioj.co.in</text>
+  <text x="150" y="362" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-size="8" font-weight="800" fill="#94a3b8" text-anchor="middle" letter-spacing="1.5">HELP &amp; SUPPORT</text>
+  <text x="150" y="375" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle" letter-spacing="0.5">tarangsupport@krioj.co.in</text>
 </svg>`
   }
 
@@ -505,7 +505,7 @@ export default function ProductManagementPage() {
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none mb-0.5">
                     SERIAL NO.
                   </span>
-                  <span className="text-sm font-black font-mono text-slate-900 tracking-widest">
+                  <span className="text-sm font-black font-sans text-slate-900 tracking-widest">
                     {currentSerialNo}
                   </span>
                 </div>
