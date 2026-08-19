@@ -91,10 +91,10 @@ export default function ProductManagementPage() {
     }
   }
 
-  // Helper to generate a standalone SVG string of the full sticker (QR + Serial No)
+  // Helper to generate a standalone SVG string of the full sticker (QR + Serial No + Help & Support)
   const getFullStickerSvgString = (serialStr, cleanQrSvg = '') => {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360">
-  <rect width="300" height="360" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="4" />
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="390" viewBox="0 0 300 390">
+  <rect width="300" height="390" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="4" />
   
   <!-- Branding Header -->
   <text x="150" y="28" font-family="Arial, sans-serif" font-size="14" font-weight="900" fill="#1976D2" text-anchor="middle" letter-spacing="2">TARANG</text>
@@ -109,9 +109,12 @@ export default function ProductManagementPage() {
   <line x1="30" y1="295" x2="270" y2="295" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 2" />
 
   <!-- Serial Number Box -->
-  <rect x="25" y="306" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
-  <text x="150" y="323" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="1">SERIAL NO.</text>
-  <text x="150" y="338" font-family="Courier New, monospace" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">${serialStr}</text>
+  <rect x="25" y="306" width="250" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+  <text x="150" y="322" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="1">SERIAL NO.</text>
+  <text x="150" y="339" font-family="Courier New, monospace" font-size="16" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">${serialStr}</text>
+
+  <!-- Help & Support -->
+  <text x="150" y="368" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#64748b" text-anchor="middle" letter-spacing="0.5">help &amp; support tarangsupport@krioj.co.in</text>
 </svg>`
   }
 
@@ -504,6 +507,11 @@ export default function ProductManagementPage() {
                   <span className="text-sm font-black font-mono text-slate-900 tracking-widest">
                     {currentSerialNo}
                   </span>
+                </div>
+
+                {/* Help & Support Line */}
+                <div className="mt-2 text-[9px] font-bold text-slate-500 tracking-wide text-center">
+                  help &amp; support tarangsupport@krioj.co.in
                 </div>
               </div>
 
